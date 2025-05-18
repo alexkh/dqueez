@@ -10,7 +10,7 @@ make install
 make run
 ```
 
-*** or, run using nodemon. It detects changes to files and auto-restarts server:
+### or, run using nodemon. It detects changes to files and auto-restarts server:
 ```
 make dev
 ```
@@ -24,7 +24,7 @@ npm ci
 node server.js
 ```
 
-*** or, if you have nodemon:
+### or, if you have nodemon:
 ```
 nodemon server.js
 ```
