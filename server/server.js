@@ -10,7 +10,9 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 
-app.use('/static', express.static(__dirname + '/public'));
+app.use('/img', express.static(__dirname + '/public/img'));
+app.use('/css', express.static(__dirname + '/public/css'));
+app.use('/js', express.static(__dirname + '/public/js'));
 app.use('/', (req, res) => {
     res.sendFile(__dirname + '/public/index.html');
 });
