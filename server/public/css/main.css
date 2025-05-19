@@ -1,9 +1,17 @@
+@import url('https://fonts.googleapis.com/css2?family=Averia+Serif+Libre:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700&family=Open+Sans:ital,wght@0,300..800;1,300..800&family=Poetsen+One&display=swap');
+
 body, html {
     background-color: #eff;
     margin: 0;
     padding: 0;
     width: 100%;
     height: 100%;
+    font-family: "Open Sans", sans-serif;
+}
+
+button {
+    font-family: "Poetsen One", sans-serif;
+    font-size: 1rem;
 }
 
 body {
@@ -43,6 +51,15 @@ hr {
 
 .slogan {
     padding-left: 10rem;
+}
+
+.slogan h1 {
+    font-family: "Poetsen One", sans-serif;
+}
+
+.slogan h2 {
+    font-family: "Averia Serif Libre", serif;
+    font-weight: 500;
 }
 
 .home .main {
