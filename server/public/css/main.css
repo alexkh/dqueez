@@ -12,6 +12,10 @@ body {
     align-items: center;
 }
 
+hr {
+    width: 90%;
+}
+
 .home {
     display: flex;
     flex-direction: column;
@@ -49,6 +53,19 @@ body {
     gap: 10rem;
 }
 
+.home .main .steps {
+    display: flex;
+    flex-direction: column;
+}
+
+.home .main .steps h2 {
+    margin: 1rem 0 0.5rem 0;
+}
+
+.home .main .steps p {
+    margin: 0 0 1rem 0;
+}
+
 .home .menu {
     display: flex;
     flex-direction: column;
@@ -56,6 +73,34 @@ body {
     justify-content: end;
     min-width: 10rem;
     max-width: 15rem;
+}
+
+.exam {
+    display: flex;
+    flex-direction: column;
+    max-width: 1000px;
+    margin: 0.5rem 0.5rem;
+}
+
+.exam .question {
+    display: flex;
+    flex-direction: row;
+    gap: 2rem;
+}
+
+.exam .image {
+    max-width: 30%;
+}
+
+.exam .image img {
+    max-width: 100%;
+}
+
+.exam hr {
+    width: 90%;
+    border-color: #eee;
+    background-color: #eee;
+    color: #eee;
 }
 
 @media (max-width: 1000px) {
@@ -75,6 +120,16 @@ body {
 
     .header {
         flex-direction: column;
+    }
+
+    .exam .question {
+        flex-direction: column;
+        gap: 0.1rem;
+        align-items: center;
+    }
+
+    .exam .image {
+        max-width: 90%;
     }
 }
 
