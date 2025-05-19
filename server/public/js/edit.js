@@ -4,8 +4,6 @@
 var questions_div = document.querySelector('.questions');
 var add_question_btn = document.querySelector('.add_question_btn');
 
-add_question_btn.addEventListener('click', on_add_question);
-
 function on_add_question(e) {
     let div = document.createElement('div');
     div.classList.add('question');
@@ -15,7 +13,7 @@ function on_add_question(e) {
         </div>
         <div class="text">
           <h2><span class="qtext">What will the question be?</span>
-          <button>Edit question</button></h2>
+          <button data-action="edit_wording">Edit wording</button></h2>
           <p>
             <input type="radio" value="yes" />
             <label>Yes</label>
@@ -32,6 +30,20 @@ function on_add_question(e) {
 `
     questions_div.append(div);
 }
+
+function on_edit_wording(e) {
+    let elem = e.target.parentNode.querySelector('.qtext');
+}
+
+function on_click(e) {
+    switch(e.target.dataset.action) {
+    case 'add_question': on_add_question(e); break;
+    case 'edit_wording': on_edit_wording(e); break;
+    default: break;
+    }
+}
+
+window.addEventListener('click', on_click);
 
 
 })()
