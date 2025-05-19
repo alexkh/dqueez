@@ -13,6 +13,9 @@ const app = express();
 app.use('/img', express.static(__dirname + '/public/img'));
 app.use('/css', express.static(__dirname + '/public/css'));
 app.use('/js', express.static(__dirname + '/public/js'));
+app.use('/edit', (req, res) => {
+    res.sendFile(__dirname + '/public/edit.html');
+});
 app.use('/', (req, res) => {
     res.sendFile(__dirname + '/public/index.html');
 });
