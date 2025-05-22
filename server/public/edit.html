@@ -19,6 +19,11 @@
         </div>
       </div>
 
+      <div class="upload_quiz_wrap">
+        <button data-action="upload_quiz"
+          class="upload_quiz_btn">Upload Quiz</button>
+      </div>
+
       <div class="main">
         <h1>Edit Deez Queez</h2>
       </div>
@@ -32,6 +37,17 @@
         <button data-action="add_question"
           class="add_question_btn">Add New Question</button>
       </div>
+    </div>
+
+    <div class="json_preview hidden">
+        <h1>Preview of the data being sent to the server</h1>
+        <button data-action="send_quiz">Send to Server</button>
+        <button data-action="cancel_send_quiz">Cancel</button>
+        <pre class="content">
+            Hello,
+        this is just a test
+            how is it going?
+        </pre>
     </div>
 
   </body>

@@ -9,6 +9,18 @@ body, html {
     font-family: "Open Sans", sans-serif;
 }
 
+.hidden {
+    display: none !important;
+}
+
+input {
+    font-size: 1.5rem;
+}
+
+input[type=number] {
+    width: 3em;
+}
+
 button {
     font-family: "Poetsen One", sans-serif;
     font-size: 1rem;
@@ -122,6 +134,46 @@ hr {
     border-color: #eee;
     background-color: #eee;
     color: #eee;
+}
+
+.exam .text {
+    flex-grow: 1;
+}
+
+.exam .side_note {
+    float: right;
+}
+
+.upload_quiz_wrap {
+    width: 100%;
+}
+
+.upload_quiz_btn {
+    float: right;
+}
+
+.json_preview {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(0, 0, 0, 0.8);
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+}
+
+.json_preview h1 {
+    color: #fff;
+}
+
+.json_preview .content {
+    background-color: white;
+    width: 80vw;
+    height: 50vh;
+    overflow: auto;
 }
 
 @media (max-width: 1000px) {
