@@ -152,7 +152,7 @@ hr {
     float: right;
 }
 
-.json_preview {
+.modal {
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -165,11 +165,11 @@ hr {
     bottom: 0;
 }
 
-.json_preview h1 {
+.modal h1 {
     color: #fff;
 }
 
-.json_preview .content {
+.modal .content {
     background-color: white;
     width: 80vw;
     height: 50vh;

@@ -4,7 +4,9 @@
 const questions_div = document.querySelector('.questions');
 const add_question_btn = document.querySelector('.add_question_btn');
 const upload_quiz_btn = document.querySelector('.upload_quiz_btn');
+const enter_password_div = document.querySelector('.enter_password');
 let cur_editor = null; // input, currently active
+let cur_json = null; // json that will be sent to the server
 
 function on_add_question(e) {
     let div = document.createElement('div');
@@ -73,6 +75,59 @@ function on_add_option(e) {
     parent_node.insertBefore(node, btn);
 }
 
+function add_question(question, points) {
+    console.log('adding question', points);
+    let div = document.createElement('div');
+    div.classList.add('question');
+    let html = `
+        <div class="image">
+            <img src="/img/placeholder.webp" />
+        </div>
+        <div class="text">
+          <h2><span class="qwording editable">${question.question}</span>
+            <input class="editor hidden" />
+            <button class="ebtn"
+                data-action="edit">Edit</button>
+          </h2>
+`;
+    for(let i = 0; i < question.options.length; ++i) {
+        html += `
+          <p>
+            <span>
+              <input type="radio" value="${question.options[i]}" />
+              <label class="answer editable">${question.options[i]}</label>
+              <input class="editor hidden">
+              <button class="ebtn" data-action="edit">Edit</button>
+            </span>
+            <span class="side_note">
+              Points: <span class="points editable">${points.options[i][1]}</span>
+              <input type="number" class="editor hidden" />
+              <button class="ebtn" data-action="edit">Edit</button>
+            </span>
+          </p>
+`;
+    }
+    html += `
+         <button data-action="add_option">Add an Answer Option</button>
+        </div>
+`
+    div.innerHTML = html;
+    questions_div.append(div);
+}
+
+function parse_qjson(qjson) {
+    console.log('parsing qjson', qjson);
+    if(!qjson.questions || !qjson.points || qjson.questions.length < 1 ||
+            qjson.points.length !== qjson.questions.length) {
+        console.error('invalid quiz data received from the server');
+        return;
+    }
+
+    for(let i = 0; i < qjson.questions.length; ++i) {
+        add_question(qjson.questions[i], qjson.points[i]);
+    }
+}
+
 function on_upload_quiz() {
     const quiz = {
         questions: [],
@@ -103,8 +158,11 @@ function on_upload_quiz() {
         quiz.points.push(p);
     }
 
-    const preview = document.querySelector('.json_preview');
-    const preview_content = document.querySelector('.json_preview .content')
+    cur_json = quiz;
+
+    const preview = document.querySelector('.modal.json_preview');
+    const preview_content = preview.querySelector('.content')
+    console.log(preview_content);
     preview_content.innerText = JSON.stringify(quiz, null, 2);
     preview.classList.remove('hidden');
 }
@@ -151,18 +209,88 @@ function on_edit_wording(e) {
     cur_editor = editor;
 }
 
-function hide_preview() {
-    const preview = document.querySelector('.json_preview');
-    preview.classList.add('hidden');
+// hide all modals on the screen
+function hide_modals() {
+    const modals = document.querySelectorAll('.modal');
+    for(let i = 0; i < modals.length; ++i) {
+        modals[i].classList.add('hidden');
+        const modal_content = modals[i].querySelector('.content');
+        if(modal_content) {
+            modal_content.innerText = '';
+        }
+    }
+}
+
+function show_credentials(data) {
+    hide_modals();
+    const credentials = document.querySelector('.modal.credentials');
+    credentials.classList.remove('hidden');
+    const credentials_content = credentials.querySelector('.content')
+    if(data.error) {
+        credentials_content.innerText = 'Error: ' + data.error;
+    } else {
+        credentials_content.innerText = 'The quiz url: https://dqueez.com/q/' +
+            data.qurl + '\nThe password for editing the quiz is: ' +
+            data.password;
+    }
+}
+
+async function send_quiz() {
+    const url = '/api/new';
+    try {
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json; charset=utf-8'
+            },
+            body: JSON.stringify(cur_json)
+        });
+        const json = await response.json();
+        console.log(json);
+        show_credentials(json);
+    } catch(error) {
+        const data = { error: error.message };
+        show_credentials(data);
+        console.error(error.message);
+    }
 }
 
 function on_send_quiz(e) {
-    hide_preview();
-    //TODO: send the quiz to the server
+    hide_modals();
+    send_quiz();
 }
 
 function on_cancel_send_quiz(e) {
-    hide_preview();
+    hide_modals();
+}
+
+async function fetch_quiz() {
+    const url = '/api/fetch_quiz';
+    try {
+        const quiz_password = document.querySelector('.quiz_password');
+        const data = {
+            password: quiz_password.value
+        };
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json; charset=utf-8'
+            },
+            body: JSON.stringify(data)
+        });
+        const json = await response.json();
+        console.log(json);
+        if(json.qjson) {
+            enter_password_div.classList.add('hidden');
+            parse_qjson(JSON.parse(json.qjson));
+        }
+    } catch(error) {
+        console.error(error.message);
+    }
+}
+
+function on_password_entered(e) {
+    fetch_quiz();
 }
 
 function on_click(e) {
@@ -173,6 +301,8 @@ function on_click(e) {
     case 'edit': on_edit_wording(e); break;
     case 'send_quiz': on_send_quiz(e); break;
     case 'cancel_send_quiz': on_cancel_send_quiz(e); break;
+    case 'hide_modals': hide_modals(); break;
+    case 'password_entered': on_password_entered(e); break;
     default: on_edit_done(); break;
     }
 }
@@ -184,6 +314,18 @@ function on_keydown(e) {
         }
     }
 }
+
+// initialization function
+function init() {
+    // if the path starts with '/q/' then we are editing an existing quiz,
+    // and to continue we need the teacher to enter the password
+    const url = window.location.pathname;
+    if(url.startsWith('/q/')) {
+        enter_password_div.classList.remove('hidden');
+    }
+}
+
+init();
 
 window.addEventListener('click', on_click);
 window.addEventListener('keydown', on_keydown);

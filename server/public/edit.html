@@ -27,6 +27,11 @@
       <div class="main">
         <h1>Edit Deez Queez</h2>
       </div>
+
+      <div class="enter_password hidden">
+        Enter password: <input type="password" class="quiz_password" />
+        <button data-action="password_entered">Continue</button>
+      </div>
     </div>
 
     <div class="exam">
@@ -39,7 +44,7 @@
       </div>
     </div>
 
-    <div class="json_preview hidden">
+    <div class="modal json_preview hidden">
         <h1>Preview of the data being sent to the server</h1>
         <button data-action="send_quiz">Send to Server</button>
         <button data-action="cancel_send_quiz">Cancel</button>
@@ -47,6 +52,13 @@
             Hello,
         this is just a test
             how is it going?
+        </pre>
+    </div>
+
+    <div class="modal credentials hidden">
+        <h1>Keep the url and password safe, they will only be shown once:</h1>
+        <button data-action="hide_modals">Dismiss</button>
+        <pre class="content">
         </pre>
     </div>
 

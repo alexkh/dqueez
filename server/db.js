@@ -17,10 +17,20 @@ pool.on('error', (err) => {
 	console.error('An idle client has experienced an error', err.stack)
 })
 
-export async function get_item(slug) {
-	return pool.query('select * from merchandise where slug = $1, [slug]')
+export async function new_quiz(data) {
+    const added_quiz = await
+        pool.query(`insert into quiz (qurl, qjson, qpasswd) values
+        ($1, $2, $3) returning *`, [
+            data.qurl,
+            data.qjson,
+            data.qpasswd
+        ]);
+    return added_quiz.rows;
 }
 
-export async function get_all_tags() {
-	return pool.query('select * from tag_name');
+export async function fetch_quiz(qurl) {
+    const quiz = await pool.query(`select * from quiz where qurl = $1`,
+        [qurl]);
+    return quiz.rows;
 }
+
