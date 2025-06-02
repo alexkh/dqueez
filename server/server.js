@@ -25,6 +25,11 @@ function urlsafe64(base64) {
 	return base64.replace(/\//g, '_').replace(/\+/g, '-').replace(/=+$/, '')
 }
 
+// serve the new_page.html file when the user goes to /new_exam
+app.get('/new_exam', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public/new_exam.html'));
+});
+
 app.get('/q/:qurl', (req, res) => {
     res.sendFile(__dirname + '/public/edit.html');
 });

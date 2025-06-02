@@ -322,7 +322,7 @@ function init() {
     const url = window.location.pathname;
     if(url.startsWith('/q/')) {
         enter_password_div.classList.remove('hidden');
-    }
+    } 
 }
 
 init();
