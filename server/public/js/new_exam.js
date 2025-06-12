@@ -10,6 +10,42 @@ const student_login = document.querySelector('.student_login');
 let current_exam = null;
 let cur_editor = null;
 let is_student_mode = false;
+let lastSelectedRadio = null; // Track the last selected radio button
+
+// Radio button deselection handler
+function handleRadioClick(e) {
+    const radio = e.target;
+    if (radio === lastSelectedRadio) {
+        // Clicking the currently selected radio - deselect it
+        setTimeout(() => {
+            radio.checked = false;
+            lastSelectedRadio = null;
+        }, 0);
+    } else {
+        lastSelectedRadio = radio;
+    }
+}
+
+// Initialize radio buttons with deselection functionality
+function initRadioButtons() {
+    document.querySelectorAll('input[type="radio"]').forEach(radio => {
+        // Only add listener if not already added
+        if (!radio.hasListener) {
+            // Ensure radio has a group name if not already set
+            if (!radio.name) {
+                const questionDiv = radio.closest('.question');
+                if (questionDiv) {
+                    const index = questionDiv.dataset.questionIndex || Date.now();
+                    radio.name = `question_${index}`;
+                } else {
+                    radio.name = `radio_group_${Date.now()}`;
+                }
+            }
+            radio.addEventListener('click', handleRadioClick);
+            radio.hasListener = true; // Mark as having listener
+        }
+    });
+}
 
 // Setup exam with details
 function on_setup_exam() {
@@ -39,7 +75,7 @@ function on_setup_exam() {
     alert('Exam setup complete! Now add your questions.');
 }
 
-// Add question (similar to your edit.js)
+// Add question (with radio button deselection)
 function on_add_question() {
     let div = document.createElement('div');
     div.classList.add('question');
@@ -54,7 +90,7 @@ function on_add_question() {
           </h2>
           <p class="option">
             <span>
-              <input type="radio" value="Yes" />
+              <input type="radio" name="radio_group_${Date.now()}" value="Yes" />
               <label class="answer editable">Yes</label>
               <input class="editor hidden" />
               <button class="ebtn" data-action="edit">Edit</button>
@@ -67,7 +103,7 @@ function on_add_question() {
           </p>
           <p class="option">
             <span>
-              <input type="radio" value="No" />
+              <input type="radio" name="radio_group_${Date.now()}" value="No" />
               <label class="answer editable">No</label>
               <input class="editor hidden">
               <button class="ebtn" data-action="edit">Edit</button>
@@ -82,17 +118,21 @@ function on_add_question() {
         </div>
     `;
     questions_div.append(div);
+    initRadioButtons(); // Initialize radio buttons for this new question
 }
 
-// Add option to existing question
+// Add option to existing question (with radio button deselection)
 function on_add_option(e) {
     const btn = e.target;
     const parent_node = btn.parentNode;
     const node = document.createElement('p');
     node.classList.add('option');
+    const questionDiv = btn.closest('.question');
+    const radioGroupName = questionDiv.querySelector('input[type="radio"]').name;
+    
     node.innerHTML = `
         <span>
-          <input type="radio" value="Sometimes" />
+          <input type="radio" name="${radioGroupName}" value="Sometimes" />
           <label class="answer editable">Sometimes</label>
           <input class="editor hidden">
           <button class="ebtn" data-action="edit">Edit</button>
@@ -104,9 +144,10 @@ function on_add_option(e) {
         </span>
     `;
     parent_node.insertBefore(node, btn);
+    initRadioButtons(); // Initialize radio buttons for this new option
 }
 
-// Edit functionality (same as your edit.js)
+// Edit functionality
 function on_edit_wording(e) {
     if(cur_editor) {
         if(e.target.innerText === 'Done') {
@@ -289,6 +330,9 @@ function start_student_exam(exam_data) {
     
     // Show timer
     show_timer(end_time);
+    
+    // Initialize radio buttons for student exam
+    initRadioButtons();
 }
 
 function load_questions_for_student(exam_data) {
@@ -417,6 +461,7 @@ function on_keydown(e) {
 // Initialize
 function init() {
     check_student_access();
+    initRadioButtons(); // Initialize any existing radio buttons on page load
 }
 
 init();

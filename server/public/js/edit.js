@@ -7,6 +7,35 @@ const upload_quiz_btn = document.querySelector('.upload_quiz_btn');
 const enter_password_div = document.querySelector('.enter_password');
 let cur_editor = null; // input, currently active
 let cur_json = null; // json that will be sent to the server
+let lastSelectedRadio = null; // Track the last selected radio button
+
+function handleRadioClick(e) {
+    const radio = e.target;
+    if (radio === lastSelectedRadio) {
+        // Clicking the currently selected radio - deselect it
+        setTimeout(() => {
+            radio.checked = false;
+            lastSelectedRadio = null;
+        }, 0);
+    } else {
+        lastSelectedRadio = radio;
+    }
+}
+
+function initRadioButtons() {
+    // Add event listeners to all radio buttons on the page
+    document.querySelectorAll('input[type="radio"]').forEach(radio => {
+        // Only add listener if not already added
+        if (!radio.hasListener) {
+            // Ensure radio has a group name
+            if (!radio.name) {
+                radio.name = 'auto_group_' + Math.floor(Math.random() * 1000000);
+            }
+            radio.addEventListener('click', handleRadioClick);
+            radio.hasListener = true; // Mark as having listener
+        }
+    });
+}
 
 function on_add_question(e) {
     let div = document.createElement('div');
@@ -23,7 +52,7 @@ function on_add_question(e) {
           </h2>
           <p class="option">
             <span>
-              <input type="radio" value="Yes" />
+              <input type="radio" name="radio_group_${Date.now()}" value="Yes" />
               <label class="answer editable">Yes</label>
               <input class="editor hidden" />
               <button class="ebtn" data-action="edit">Edit</button>
@@ -36,7 +65,7 @@ function on_add_question(e) {
           </p>
           <p class="option">
             <span>
-              <input type="radio" value="No" />
+              <input type="radio" name="radio_group_${Date.now()}" value="No" />
               <label class="answer editable">No</label>
               <input class="editor hidden">
               <button class="ebtn" data-action="edit">Edit</button>
@@ -50,8 +79,11 @@ function on_add_question(e) {
 
           <button data-action="add_option">Add an Answer Option</button>
         </div>
-`;
+    `;
     questions_div.append(div);
+    
+    // Initialize radio buttons in the new question
+    initRadioButtons();
 }
 
 function on_add_option(e) {
@@ -59,9 +91,12 @@ function on_add_option(e) {
     const parent_node = btn.parentNode;
     const node = document.createElement('p');
     node.classList.add('option');
+    const questionDiv = btn.closest('.question');
+    const radioGroupName = questionDiv.querySelector('input[type="radio"]').name;
+    
     node.innerHTML = `
             <span>
-              <input type="radio" value="Sometimes" />
+              <input type="radio" name="${radioGroupName}" value="Sometimes" />
               <label class="answer editable">Sometimes</label>
               <input class="editor hidden">
               <button class="ebtn" data-action="edit">Edit</button>
@@ -71,8 +106,11 @@ function on_add_option(e) {
               <input type="number" class="editor hidden" />
               <button class="ebtn" data-action="edit">Edit</button>
             </span>
-`;
+    `;
     parent_node.insertBefore(node, btn);
+    
+    // Initialize radio buttons in the new option
+    initRadioButtons();
 }
 
 function add_question(question, points) {
@@ -89,12 +127,12 @@ function add_question(question, points) {
             <button class="ebtn"
                 data-action="edit">Edit</button>
           </h2>
-`;
+    `;
     for(let i = 0; i < question.options.length; ++i) {
         html += `
-          <p>
+          <p class="option">
             <span>
-              <input type="radio" value="${question.options[i]}" />
+              <input type="radio" name="radio_group_${Date.now()}" value="${question.options[i]}" />
               <label class="answer editable">${question.options[i]}</label>
               <input class="editor hidden">
               <button class="ebtn" data-action="edit">Edit</button>
@@ -105,14 +143,17 @@ function add_question(question, points) {
               <button class="ebtn" data-action="edit">Edit</button>
             </span>
           </p>
-`;
+        `;
     }
     html += `
          <button data-action="add_option">Add an Answer Option</button>
         </div>
-`
+    `;
     div.innerHTML = html;
     questions_div.append(div);
+    
+    // Initialize radio buttons in the new question
+    initRadioButtons();
 }
 
 function parse_qjson(qjson) {
@@ -323,6 +364,9 @@ function init() {
     if(url.startsWith('/q/')) {
         enter_password_div.classList.remove('hidden');
     } 
+    
+    // Initialize radio buttons (including those in static HTML)
+    initRadioButtons();
 }
 
 init();
@@ -330,5 +374,4 @@ init();
 window.addEventListener('click', on_click);
 window.addEventListener('keydown', on_keydown);
 
-
-})()
+})();
