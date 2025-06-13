@@ -76,7 +76,7 @@ function on_add_question(e) {
               Points: <span class="points editable">1</span>
               <input type="number" class="editor hidden" />
               <button class="ebtn" data-action="edit">Edit</button>
-              <button data-action="remove_option">Remove</button>
+              <button style="margin-left: 10px" data-action="remove_option">Remove</button>
             </span>
           </p>
           <p class="option">
@@ -90,7 +90,7 @@ function on_add_question(e) {
               Points: <span class="points editable">0</span>
               <input type="number" class="editor hidden" />
               <button class="ebtn" data-action="edit">Edit</button>
-              <button data-action="remove_option">Remove</button>
+              <button style="margin-left: 10px" data-action="remove_option">Remove</button>
             </span>
            
           </p>
@@ -131,7 +131,7 @@ function on_add_option(e) {
               Points: <span class="points editable">0</span>
               <input type="number" class="editor hidden" />
               <button class="ebtn" data-action="edit">Edit</button>
-              <button data-action="remove_option">Remove</button>
+              <button style="margin-left: 10px" data-action="remove_option">Remove</button>
             </span>
     `;
     parent_node.insertBefore(node, btn);
