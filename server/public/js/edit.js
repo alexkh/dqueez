@@ -51,6 +51,7 @@ function on_add_question(e) {
             <input class="editor hidden" />
             <button class="ebtn"
                 data-action="edit">Edit</button>
+            <button data-action="remove_question">Remove Question</button>
           </h2>
           <p class="option">
             <span>
@@ -86,6 +87,13 @@ function on_add_question(e) {
 
     // Initialize radio buttons in the new question
     initRadioButtons();
+}
+
+function on_remove_question(e) {
+    const questionDiv = e.target.closest('.question');
+    if (questionDiv) {
+        questionDiv.remove();
+    }
 }
 
 function on_add_option(e) {
@@ -397,6 +405,7 @@ function on_copy_credentials(e) {
 function on_click(e) {
     switch(e.target.dataset.action) {
     case 'add_question': on_add_question(e); break;
+    case 'remove_question': on_remove_question(e); break;
     case 'add_option': on_add_option(e); break;
     case 'upload_quiz': on_upload_quiz(e); break;
     case 'edit': on_edit_wording(e); break;
