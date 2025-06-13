@@ -7,7 +7,9 @@ const upload_quiz_btn = document.querySelector('.upload_quiz_btn');
 const enter_password_div = document.querySelector('.enter_password');
 let cur_editor = null; // input, currently active
 let cur_json = null; // json that will be sent to the server
+let credentials = null; // these are required to edit an existing quiz
 let lastSelectedRadio = null; // Track the last selected radio button
+
 
 function handleRadioClick(e) {
     const radio = e.target;
@@ -81,7 +83,7 @@ function on_add_question(e) {
         </div>
     `;
     questions_div.append(div);
-    
+
     // Initialize radio buttons in the new question
     initRadioButtons();
 }
@@ -93,7 +95,7 @@ function on_add_option(e) {
     node.classList.add('option');
     const questionDiv = btn.closest('.question');
     const radioGroupName = questionDiv.querySelector('input[type="radio"]').name;
-    
+
     node.innerHTML = `
             <span>
               <input type="radio" name="${radioGroupName}" value="Sometimes" />
@@ -108,7 +110,7 @@ function on_add_option(e) {
             </span>
     `;
     parent_node.insertBefore(node, btn);
-    
+
     // Initialize radio buttons in the new option
     initRadioButtons();
 }
@@ -151,7 +153,7 @@ function add_question(question, points) {
     `;
     div.innerHTML = html;
     questions_div.append(div);
-    
+
     // Initialize radio buttons in the new question
     initRadioButtons();
 }
@@ -262,20 +264,21 @@ function hide_modals() {
     }
 }
 
-function show_credentials(data) {
+function show_credentials(error) {
     hide_modals();
-    const credentials = document.querySelector('.modal.credentials');
-    credentials.classList.remove('hidden');
-    const credentials_content = credentials.querySelector('.content')
-    if(data.error) {
-        credentials_content.innerText = 'Error: ' + data.error;
+    const credentials_div = document.querySelector('.modal.credentials');
+    credentials_div.classList.remove('hidden');
+    const credentials_content = credentials_div.querySelector('.content')
+    if(error && error.error) {
+        credentials_content.innerText = 'Error: ' + error.error;
     } else {
         credentials_content.innerText = 'The quiz url: https://dqueez.com/q/' +
-            data.qurl + '\nThe password for editing the quiz is: ' +
-            data.password;
+            credentials.qurl + '\nThe password for editing the quiz is: ' +
+            credentials.password;
     }
 }
 
+// send new quiz to the database
 async function send_quiz() {
     const url = '/api/new';
     try {
@@ -287,8 +290,11 @@ async function send_quiz() {
             body: JSON.stringify(cur_json)
         });
         const json = await response.json();
-        console.log(json);
-        show_credentials(json);
+        credentials = {
+            qurl: json.qurl,
+            password: json.password
+        }
+        show_credentials();
     } catch(error) {
         const data = { error: error.message };
         show_credentials(data);
@@ -296,9 +302,39 @@ async function send_quiz() {
     }
 }
 
+// send modified version of the quiz to the database
+async function send_q_modify() {
+    const url = '/api/q/modify';
+    try {
+        const data = {
+                password: credentials.password,
+                qjson: JSON.stringify(cur_json)
+        }
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json; charset=utf-8'
+            },
+            body: JSON.stringify(data)
+        });
+        const json = await response.json();
+        //TODO; create a proper modal for status messages
+        alert('Modified quiz successfully saved to the database!');
+    } catch(error) {
+        const data = { error: error.message };
+        //TODO; create a proper modal for status messages
+        alert('Error saving the updated quiz:', error.message);
+        console.error(error.message);
+    }
+}
+
 function on_send_quiz(e) {
     hide_modals();
-    send_quiz();
+    if(credentials === null || !credentials.password) {
+        send_quiz();
+    } else {
+        send_q_modify();
+    }
 }
 
 function on_cancel_send_quiz(e) {
@@ -322,7 +358,14 @@ async function fetch_quiz() {
         const json = await response.json();
         console.log(json);
         if(json.qjson) {
+            // successfully loaded a quiz, which means that credentials are good
+            const url = window.location.pathname; // we extract qurl from url
+            credentials = {
+                qurl: url.split("/")[2],
+                password: quiz_password.value
+            }
             enter_password_div.classList.add('hidden');
+            quiz_password.value = '';
             parse_qjson(JSON.parse(json.qjson));
         }
     } catch(error) {
@@ -361,10 +404,11 @@ function init() {
     // if the path starts with '/q/' then we are editing an existing quiz,
     // and to continue we need the teacher to enter the password
     const url = window.location.pathname;
+    console.log('qurl = ', url.split("/")[2]);
     if(url.startsWith('/q/')) {
         enter_password_div.classList.remove('hidden');
-    } 
-    
+    }
+
     // Initialize radio buttons (including those in static HTML)
     initRadioButtons();
 }

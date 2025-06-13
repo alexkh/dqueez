@@ -28,6 +28,16 @@ export async function new_quiz(data) {
     return added_quiz.rows;
 }
 
+export async function q_modify(data) {
+    const modified_quiz = await
+        pool.query(`update quiz set qjson=$1, qupdated=now() where qurl=$2
+            returning *`, [
+            data.qjson,
+            data.qurl
+        ]);
+    return modified_quiz.rows;
+}
+
 export async function fetch_quiz(qurl) {
     const quiz = await pool.query(`select * from quiz where qurl = $1`,
         [qurl]);

@@ -53,6 +53,34 @@ app.post('/api/new', async (req, res) => {
     } catch(err) { err_db(err, res) }
 });
 
+// save modifications to an existing quiz in the database
+app.post('/api/q/modify', async (req, res) => {
+    try {
+        console.log('modifying an existing quiz:',
+            req.headers.referer.split('/').pop());
+        const qurl = req.headers.referer.split('/').pop();
+        console.log('qurl = ', qurl);
+        const rows = await db.fetch_quiz(qurl);
+        if(rows.length !== 1) {
+            throw new Error('Invalid qurl or password');
+        }
+        // check if password matches
+        const password_good = await bcrypt.compare(req.body.password,
+            rows[0].qpasswd);
+        if(!password_good) {
+            throw new Error('Invalid qurl or password');
+        }
+        // password matches, proceed to updating the quiz table:
+        const data = {
+            qurl,
+            qjson: req.body.qjson
+        }
+        const rows2 = await db.q_modify(data);
+
+        res.status(200).json({ qurl: qurl });
+    } catch(err) { err_db(err, res) }
+});
+
 app.post('/api/fetch_quiz', async (req, res) => {
     try {
         console.log('trying to fetch quiz:',
