@@ -64,6 +64,7 @@ function on_add_question(e) {
               Points: <span class="points editable">1</span>
               <input type="number" class="editor hidden" />
               <button class="ebtn" data-action="edit">Edit</button>
+              <button data-action="remove_option">Remove</button>
             </span>
           </p>
           <p class="option">
@@ -77,7 +78,9 @@ function on_add_question(e) {
               Points: <span class="points editable">0</span>
               <input type="number" class="editor hidden" />
               <button class="ebtn" data-action="edit">Edit</button>
+              <button data-action="remove_option">Remove</button>
             </span>
+           
           </p>
 
           <button data-action="add_option">Add an Answer Option</button>
@@ -115,12 +118,19 @@ function on_add_option(e) {
               Points: <span class="points editable">0</span>
               <input type="number" class="editor hidden" />
               <button class="ebtn" data-action="edit">Edit</button>
+              <button data-action="remove_option">Remove</button>
             </span>
     `;
     parent_node.insertBefore(node, btn);
 
     // Initialize radio buttons in the new option
     initRadioButtons();
+}
+function on_remove_option(e) {
+    const option = e.target.closest('.option');
+    if (option) {
+        option.remove();
+    }
 }
 
 function add_question(question, points) {
@@ -407,6 +417,7 @@ function on_click(e) {
     case 'add_question': on_add_question(e); break;
     case 'remove_question': on_remove_question(e); break;
     case 'add_option': on_add_option(e); break;
+    case 'remove_option': on_remove_option(e); break;
     case 'upload_quiz': on_upload_quiz(e); break;
     case 'edit': on_edit_wording(e); break;
     case 'send_quiz': on_send_quiz(e); break;
