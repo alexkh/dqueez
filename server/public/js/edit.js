@@ -24,6 +24,18 @@ function handleRadioClick(e) {
     }
 }
 
+function updateRemoveButtonsForQuestion(questionDiv) {
+    const options = questionDiv.querySelectorAll('.option');
+    const showRemove = options.length > 2;
+    options.forEach(option => {
+        const removeBtn = option.querySelector('[data-action="remove_option"]');
+        if (removeBtn) {
+            removeBtn.style.display = showRemove ? 'inline-block' : 'none';
+        }
+    });
+}
+
+
 function initRadioButtons() {
     // Add event listeners to all radio buttons on the page
     document.querySelectorAll('input[type="radio"]').forEach(radio => {
@@ -90,6 +102,7 @@ function on_add_question(e) {
 
     // Initialize radio buttons in the new question
     initRadioButtons();
+    updateRemoveButtonsForQuestion(div);
 }
 
 function on_remove_question(e) {
@@ -125,11 +138,14 @@ function on_add_option(e) {
 
     // Initialize radio buttons in the new option
     initRadioButtons();
+    updateRemoveButtonsForQuestion(questionDiv);
 }
 function on_remove_option(e) {
     const option = e.target.closest('.option');
+    const questionDiv = e.target.closest('.question');
     if (option) {
         option.remove();
+        updateRemoveButtonsForQuestion(questionDiv);
     }
 }
 
