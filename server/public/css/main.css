@@ -211,6 +211,10 @@ hr {
     border-radius: 4px;
 }
 
+.modal.credentials .content {
+    font-size: 2rem;
+}
+
 .modal button {
     margin-top: 1rem;
     padding: 0.5em 1em;

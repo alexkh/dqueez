@@ -272,9 +272,16 @@ function show_credentials(error) {
     if(error && error.error) {
         credentials_content.innerText = 'Error: ' + error.error;
     } else {
-        credentials_content.innerText = 'The quiz url: https://dqueez.com/q/' +
-            credentials.qurl + '\nThe password for editing the quiz is: ' +
-            credentials.password;
+        credentials_content.innerHTML = `The quiz url:
+            <a href="https://dqueez.com/q/${credentials.qurl}">
+            https://dqueez.com/q/${credentials.qurl}</a>
+            <br>
+            <details>
+              <summary>Click to see the password for editing this quiz
+              </summary>
+              <p>${credentials.password}</p>
+            </details>
+            <button data-action="copy_credentials">Copy to Clipboard</button>`;
     }
 }
 
@@ -377,6 +384,16 @@ function on_password_entered(e) {
     fetch_quiz();
 }
 
+function on_copy_credentials(e) {
+    const inp = document.createElement('input');
+    document.body.appendChild(inp);
+    inp.value = `Quiz: https://dqueez.com/q/${credentials.qurl}
+ Password: ${credentials.password}`;
+    inp.select();
+    document.execCommand('copy', false);
+    inp.remove();
+}
+
 function on_click(e) {
     switch(e.target.dataset.action) {
     case 'add_question': on_add_question(e); break;
@@ -387,6 +404,7 @@ function on_click(e) {
     case 'cancel_send_quiz': on_cancel_send_quiz(e); break;
     case 'hide_modals': hide_modals(); break;
     case 'password_entered': on_password_entered(e); break;
+    case 'copy_credentials': on_copy_credentials(e); break;
     default: on_edit_done(); break;
     }
 }
