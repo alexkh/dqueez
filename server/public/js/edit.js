@@ -65,44 +65,81 @@ function on_add_question(e) {
                 data-action="edit">Edit</button>
             <button data-action="remove_question">Remove Question</button>
           </h2>
-          <p class="option">
-            <span>
-              <input type="radio" name="radio_group_${Date.now()}" value="Yes" />
-              <label class="answer editable">Yes</label>
-              <input class="editor hidden" />
-              <button class="ebtn" data-action="edit">Edit</button>
-            </span>
-            <span class="side_note">
-              Points: <span class="points editable">1</span>
-              <input type="number" class="editor hidden" />
-              <button class="ebtn" data-action="edit">Edit</button>
-              <button style="margin-left: 10px" data-action="remove_option">Remove</button>
-            </span>
-          </p>
-          <p class="option">
-            <span>
-              <input type="radio" name="radio_group_${Date.now()}" value="No" />
-              <label class="answer editable">No</label>
-              <input class="editor hidden">
-              <button class="ebtn" data-action="edit">Edit</button>
-            </span>
-            <span class="side_note">
-              Points: <span class="points editable">0</span>
-              <input type="number" class="editor hidden" />
-              <button class="ebtn" data-action="edit">Edit</button>
-              <button style="margin-left: 10px" data-action="remove_option">Remove</button>
-            </span>
-           
-          </p>
 
-          <button data-action="add_option">Add an Answer Option</button>
+          <div class="optionType">  
+            <label for="answerType">Choose an answer type: </label>
+            <select id="answers">
+                <option value="default"></option>
+                <option value="radio">Radio</option>
+                <option value="checkboxes">Checkboxes</option>
+                <option value="dropdown">Dropdown</option>
+                <option value="short_answer">Short Answer </option>
+                <option value="text">Text</option>
+                <option value="sequence">Sequence</option> 
+            </select>
+          </div>
+
+          <div class="answerType" id="answerTypeContainer"></div>
         </div>
-    `;
+    `; 
     questions_div.append(div);
 
     // Initialize radio buttons in the new question
     initRadioButtons();
     updateRemoveButtonsForQuestion(div);
+    radioQuestionType(div); 
+    document.querySelectorAll('.question').forEach(radioQuestionType);
+}
+
+//function when answer type is radio
+function radioQuestionType(e) {
+    const select = e.querySelector('.optionType select');
+    const answerContainer = e.querySelector('.answerType');
+
+    select.addEventListener('change', function () {
+        // Clear previous content
+        answerContainer.innerHTML = '';
+
+        if (select.value === 'radio') {
+            const div = document.createElement('div');
+            div.innerHTML = `
+                <p>Select one:</p>
+                <p class="option">
+                    <span>
+                        <input type="radio" name="radio_group_${Date.now()}" value="Yes" />
+                        <label class="answer editable">Yes</label>
+                        <input class="editor hidden" />
+                        <button class="ebtn" data-action="edit">Edit</button>
+                    </span>
+                    <span class="side_note">
+                        Points: <span class="points editable">1</span>
+                        <input type="number" class="editor hidden" />
+                        <button class="ebtn" data-action="edit">Edit</button>
+                        <button style="margin-left: 10px" data-action="remove_option">Remove</button>
+                    </span>
+                </p> 
+                <p class="option">
+                    <span>
+                        <input type="radio" name="radio_group_${Date.now()}" value="No" />
+                        <label class="answer editable">No</label>
+                        <input class="editor hidden">
+                        <button class="ebtn" data-action="edit">Edit</button>
+                    </span>
+                    <span class="side_note">
+                        Points: <span class="points editable">0</span>
+                        <input type="number" class="editor hidden" />
+                        <button class="ebtn" data-action="edit">Edit</button>
+                        <button style="margin-left: 10px" data-action="remove_option">Remove</button>
+                    </span> 
+                </p>
+
+                <button data-action="add_option">Add an Answer Option</button>
+                `;
+            answerContainer.appendChild(div);
+        }
+
+        // You can add other answer type handlers here (checkboxes, dropdown, etc.)
+    });
 }
 
 function on_remove_question(e) {

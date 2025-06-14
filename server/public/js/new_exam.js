@@ -101,6 +101,7 @@ function on_add_question() {
               <button class="ebtn" data-action="edit">Edit</button>
             </span>
           </p>
+          <div>
           <p class="option">
             <span>
               <input type="radio" name="radio_group_${Date.now()}" value="No" />
@@ -114,7 +115,8 @@ function on_add_question() {
               <button class="ebtn" data-action="edit">Edit</button>
             </span>
           </p>
-          <button data-action="add_option">Add an Answer Option</button>
+          </div>
+          
         </div>
     `;
     questions_div.append(div);
