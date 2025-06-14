@@ -12,6 +12,7 @@ const efinish_input = document.querySelector('.exam_end');
 const eduration_input = document.querySelector('.exam_duration_minutes');
 const inputs_table = document.querySelector('.inputs_table');
 const estudents_input = document.querySelector('.student_ids');
+let old_exam_select_value = null; // if exam_select changes - update exam view
 let cur_editor = null; // input, currently active
 let cur_json = null; // json that will be sent to the server
 let credentials = null; // these are required to edit an existing quiz
@@ -669,7 +670,7 @@ async function fetch_exams() {
     try {
         const quiz_password = document.querySelector('.quiz_password');
         const data = {
-            password: quiz_password.value
+            password: credentials?.password || quiz_password.value
         };
         const response = await fetch(url, {
             method: 'POST',
@@ -683,12 +684,14 @@ async function fetch_exams() {
         if(json.qjson) {
             // successfully loaded a quiz, which means that credentials are good
             const url = window.location.pathname; // we extract qurl from url
-            credentials = {
-                qurl: url.split("/")[2],
-                password: quiz_password.value
+            if(!credentials) {
+                credentials = {
+                    qurl: url.split("/")[2],
+                    password: quiz_password.value
+                }
+                enter_password_div.classList.add('hidden');
+                quiz_password.value = '';
             }
-            enter_password_div.classList.add('hidden');
-            quiz_password.value = '';
             parse_qjson(JSON.parse(json.qjson));
             all_exams = json.exams;
             all_inputs = json.inputs;
@@ -728,7 +731,15 @@ function on_exam_selected() {
             break;
         }
     }
-    if(exam_ind === null) return;
+    if(exam_ind === null) {
+        // creating new exam so reset all the values
+        estart_input.value = '';
+        efinish_input.value = '';
+        eduration_input.value = 20;
+        inputs_table.innerHTML = '';
+        estudents_input.value = '';
+        return;
+    }
     let st = new Date(all_exams[exam_ind].estart).toISOString().slice(0, 16);
     let fin = new Date(all_exams[exam_ind].estart).toISOString().slice(0, 16);
     estart_input.value = st;
@@ -741,6 +752,10 @@ function on_exam_selected() {
         <div class="thead">Student Exam Url</div>`;
     const ieid = all_exams[exam_ind].eid;
     for(let i = 0; i < all_inputs.length; ++i) {
+        // all_inputs contain inputs for all exam, so we need to filter by ieid
+        if(all_inputs[i].ieid !== ieid) {
+            continue
+        }
         const id_div = document.createElement('div');
         id_div.innerText = all_inputs[i].istudent_id;
         id_div.classList.add('left_col');
@@ -751,6 +766,16 @@ function on_exam_selected() {
         inputs_table.appendChild(iurl_div);
     }
     console.log('start, finish:', st, fin);
+}
+
+function on_exam_select_change(e) {
+    console.log('Exam Select changed from ', old_exam_select_value,
+        ' to ', exam_select.value);
+    if(old_exam_select_value === exam_select.value) {
+        return; // no change, it could be just clicked - no need to update view
+    }
+    old_exam_select_value = exam_select.value;
+    on_exam_selected();
 }
 
 function on_password_entered(e) {
@@ -790,8 +815,9 @@ async function on_schedule_exam(e) {
         });
         const json = await response.json();
         console.log(json);
-        if(json.eurl) {
-            console.log('Exam created. Next step - creating the inputs', eurl);
+        if(json.exam.eurl) {
+            console.log('Exam created. Refreshing the view');
+            fetch_exams();
         };
     } catch(error) {
         console.error(error.message);
@@ -849,5 +875,6 @@ init();
 
 window.addEventListener('click', on_click);
 window.addEventListener('keydown', on_keydown);
+exam_select.onchange = on_exam_select_change;
 
 })();

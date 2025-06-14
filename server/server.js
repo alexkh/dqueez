@@ -123,6 +123,20 @@ function is_valid_studentid(str) {
     return regex.test(str);
 }
 
+async function create_inputs(eid, students) {
+    for(let i = 0; i < students.length; ++i) {
+        if(!is_valid_studentid(students[i])) {
+            continue;
+        }
+        const stud = {
+            ieid: eid,
+            iurl: urlsafe64(crypto.randomBytes(6).toString('base64')),
+            istudent_id: students[i]
+        };
+        await db.create_input(stud);
+    }
+}
+
 app.post('/api/e/create', async (req, res) => {
     try {
         const qurl = req.headers.referer.split('/').pop();
@@ -137,6 +151,9 @@ app.post('/api/e/create', async (req, res) => {
             etime_limit_seconds: req.body.etime_limit_seconds
         };
         const rows = await db.e_create(data);
+        // add new inputs if any student id's provided
+        const students = req.body.estudents.trim().split(/\s+/).filter(Boolean);
+        await create_inputs(rows[0].eid, students);
 
         res.status(200).json({ exam: rows[0] });
     } catch(err) { err_db(err, res) }
@@ -156,19 +173,9 @@ app.post('/api/e/modify', async (req, res) => {
             etime_limit_seconds: req.body.etime_limit_seconds
         };
         const rows = await db.e_modify(data);
-        // add student ids
+        // add new inputs if any student id's provided
         const students = req.body.estudents.trim().split(/\s+/).filter(Boolean);
-        for(let i = 0; i < students.length; ++i) {
-            if(!is_valid_studentid(students[i])) {
-                continue;
-            }
-            const stud = {
-                ieid: rows[0].eid,
-                iurl: urlsafe64(crypto.randomBytes(6).toString('base64')),
-                istudent_id: students[i]
-            };
-            await db.create_input(stud);
-        }
+        await create_inputs(rows[0].eid, students);
 
         res.status(200).json({ exam: rows[0] });
     } catch(err) { err_db(err, res) }
