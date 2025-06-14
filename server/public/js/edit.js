@@ -75,7 +75,7 @@ function on_add_question(e) {
                     <option value="checkboxes">Checkboxes</option>
                     <option value="dropdown">Dropdown</option>
                     <option value="short_answer">Short Answer</option>
-                    <option value="text">Text</option>
+                    <option value="long_answer">Long Answer</option>
                     <option value="sequence">Sequence</option> 
                 </select>
             </div>
@@ -100,9 +100,47 @@ function bindAnswerTypeHandler(questionBlock) {
         answerContainer.innerHTML = ''; // Clear previous answers
 
         if (select.value === 'radio') {
-            answerContainer.innerHTML = getRadioOptionsHTML();
+            answerContainer.innerHTML = getRadioOptions();
         } else if (select.value === 'checkboxes') {
-            answerContainer.innerHTML = getCheckboxOptionsHTML();
+            answerContainer.innerHTML = getCheckboxOptions();
+        } else if (select.value === 'short_answer') {
+             answerContainer.innerHTML = getShortAnswer();
+
+            const input = answerContainer.querySelector('.shortAnswer');
+            const maxInput = answerContainer.querySelector('.maxLengthControl');
+
+            if (input && maxInput) {
+                // Initial binding
+                input.addEventListener('input', () => updateCharCount(input));
+                maxInput.addEventListener('input', () => {
+                    const newMax = parseInt(maxInput.value);
+                    input.setAttribute('maxlength', newMax);
+                    updateCharCount(input);
+                });
+
+                updateCharCount(input);
+            }
+        }else if (select.value === 'long_answer') {
+             answerContainer.innerHTML = getLongAnswer();
+
+            const input = answerContainer.querySelector('.longAnswer');
+            const maxInput = answerContainer.querySelector('.maxLengthControl');
+
+            if (input && maxInput) {
+                // Initial binding
+                input.addEventListener('input', () => updateCharCount(input));
+                maxInput.addEventListener('input', () => {
+                    const newMax = parseInt(maxInput.value);
+                    input.setAttribute('maxlength', newMax);
+                    updateCharCount(input);
+                });
+
+                updateCharCount(input);
+            }
+        } else if (select.value === 'sequence') {
+            answerContainer.innerHTML = getSequenceOptions();
+        } else if (select.value === 'dropdown') {
+            answerContainer.innerHTML = getDropdownOptions();
         }
 
         // Re-init after rendering
@@ -111,8 +149,9 @@ function bindAnswerTypeHandler(questionBlock) {
     });
 }
 
+
 //function for radio answer type
-function getRadioOptionsHTML() {
+function getRadioOptions() {
     const groupName = `radio_group_${Date.now()}`;
     return `
         <p>Select one:</p>
@@ -149,7 +188,7 @@ function getRadioOptionsHTML() {
 }
 
 // function for checkbox answer type
-function getCheckboxOptionsHTML() {
+function getCheckboxOptions() {
     return `
         <p>Select all that apply:</p>
         <p class="option">
@@ -183,6 +222,108 @@ function getCheckboxOptionsHTML() {
         <button data-action="add_option">Add an Answer Option</button>
     `;
 }
+// function for short text answer type
+function getShortAnswer() {
+    const defaultMax = 50;
+
+    return ` 
+        <p class="option short-answer"> 
+            <input 
+                type="text" 
+                placeholder="Answer is here" 
+                class="shortAnswer" 
+                maxlength="${defaultMax}" />
+            <small class="charCount">0 / ${defaultMax}</small> 
+            
+        </p>
+        <p>
+            <label>
+                Max Length: 
+                <input type="number" class="maxLengthControl" value="${defaultMax}" min="1" />
+            </label>
+            <span class="side_note">
+                Points: <span class="points editable">0</span>
+                <input type="number" class="editor hidden" />
+                <button class="ebtn" data-action="edit">Edit</button>
+            </span>
+        </p>
+    `;
+}
+
+function getLongAnswer() { 
+
+    return ` 
+        <p class="option long-answer"> 
+            <textarea 
+                placeholder="Answer is here" 
+                class="longAnswer"
+                rows="10"
+                cols="100"
+            ></textarea> 
+        </p>
+        <p> 
+            <span class="side_note">
+                Points: <span class="points editable">0</span>
+                <input type="number" class="editor hidden" />
+                <button class="ebtn" data-action="edit">Edit</button>
+            </span>
+        </p>
+    `;
+}
+//helper function for textbox answer type, counts the number of char
+function updateCharCount(input) {
+    const max = input.getAttribute('maxlength');
+    const currentLength = input.value.length;
+    const counter = input.nextElementSibling; // the <small> element
+    
+    if (counter) {
+        counter.textContent = `${currentLength} / ${max}`;
+    }
+}
+
+function getSequenceOptions() {
+    return `
+        <p>Arrange the items in the correct order:</p>
+        <ul class="option sequence" style="list-style-type: none; padding: 0;">
+            <li>
+                <span class="editable">Step 1</span>
+                <input class="editor hidden" />
+                <button class="ebtn" data-action="edit">Edit</button>
+            </li>
+            <li>
+                <span class="editable">Step 2</span>
+                <input class="editor hidden" />
+                <button class="ebtn" data-action="edit">Edit</button>
+            </li>
+        </ul>
+        <button data-action="add_sequence_step">Add Step</button>
+        <span class="side_note">
+            Points: <span class="points editable">0</span>
+            <input type="number" class="editor hidden" />
+            <button class="ebtn" data-action="edit">Edit</button>
+        </span>
+    `;
+}
+
+function getDropdownOptions() {
+    return `
+        <p>Select one from dropdown:</p>
+        <p class="option dropdown-answer">
+            <span>
+                <select >
+                    <option>Option 1</option>
+                    <option>Option 2</option>
+                </select>
+                <button data-action="edit_dropdown">Edit Options</button>
+            </span>
+            <span class="side_note">
+                Points: <span class="points editable">0</span>
+                <input type="number" class="editor hidden" />
+                <button class="ebtn" data-action="edit">Edit</button>
+            </span>
+        </p>
+    `;
+}
 
 
 function on_remove_question(e) {
@@ -192,7 +333,9 @@ function on_remove_question(e) {
     }
 }
 
-function on_add_option(e) {
+
+//functio to create/add new answer option
+function add_answerOption(e) {
     const btn = e.target;
     const parent_node = btn.parentNode;
     const questionDiv = btn.closest('.question');
@@ -529,7 +672,7 @@ function on_click(e) {
     switch(e.target.dataset.action) {
     case 'add_question': on_add_question(e); break;
     case 'remove_question': on_remove_question(e); break;
-    case 'add_option': on_add_option(e); break;
+    case 'add_option': add_answerOption(e); break;
     case 'remove_option': on_remove_option(e); break;
     case 'upload_quiz': on_upload_quiz(e); break;
     case 'edit': on_edit_wording(e); break;
