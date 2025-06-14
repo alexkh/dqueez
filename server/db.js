@@ -104,3 +104,11 @@ export async function create_input(stud) {
         ]);
 }
 
+export async function fetch_questions(iurl, student_id) {
+    const questions = await
+        pool.query(`select qjson from input inner join exam on ieid = eid
+            inner join quiz on qid = eqid where iurl = $1 and istudent_id = $2`,
+            [ iurl, student_id ]);
+    return questions.rows;
+}
+

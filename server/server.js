@@ -94,24 +94,20 @@ app.post('/api/q/modify', async (req, res) => {
     } catch(err) { err_db(err, res) }
 });
 
-// fetch just the quiz, without any associated exams and inputs
-app.post('/api/fetch_quiz', async (req, res) => {
+// fetch just the questions without the answers
+app.post('/api/fetch_questions', async (req, res) => {
     try {
-        console.log('trying to fetch quiz:',
+        console.log('trying to fetch quiz questions:',
             req.headers.referer.split('/').pop());
-        const qurl = req.headers.referer.split('/').pop();
-        console.log('qurl = ', qurl);
-        const rows = await db.fetch_quiz(qurl);
+        const iurl = req.headers.referer.split('/').pop();
+        console.log('iurl = ', iurl, 'student_id = ', req.body);
+        const rows = await db.fetch_questions(iurl, req.body.student_id);
         if(rows.length !== 1) {
-            throw new Error('Invalid qurl or password');
+            throw new Error('Invalid iurl or student_id');
         }
-        // check if password matches
-        const password_good = await bcrypt.compare(req.body.password,
-            rows[0].qpasswd);
-        if(!password_good) {
-            throw new Error('Invalid qurl or password');
-        }
-        res.status(200).json({ qjson: rows[0].qjson });
+        const qjson = JSON.parse(rows[0].qjson);
+        qjson.points = undefined;
+        res.status(200).json({ qjson });
     } catch(err) { err_db(err, res) }
 });
 
@@ -204,6 +200,9 @@ app.use('/css', express.static(__dirname + '/public/css'));
 app.use('/js', express.static(__dirname + '/public/js'));
 app.use('/edit', (req, res) => {
     res.sendFile(__dirname + '/public/edit.html');
+});
+app.use('/:iurl', (req, res) => {
+    res.sendFile(__dirname + '/public/conduct.html');
 });
 app.use('/', (req, res) => {
     res.sendFile(__dirname + '/public/index.html');

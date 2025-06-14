@@ -629,42 +629,6 @@ function on_cancel_send_quiz(e) {
     hide_modals();
 }
 
-// deprecated, because it only fetches quiz, we also need to edit exams
-// see fetch_exams()
-async function fetch_quiz() {
-    const url = '/api/fetch_quiz';
-    try {
-        const quiz_password = document.querySelector('.quiz_password');
-        const data = {
-            password: quiz_password.value
-        };
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json; charset=utf-8'
-            },
-            body: JSON.stringify(data)
-        });
-        const json = await response.json();
-        console.log(json);
-        if(json.qjson) {
-            // successfully loaded a quiz, which means that credentials are good
-            const url = window.location.pathname; // we extract qurl from url
-            credentials = {
-                qurl: url.split("/")[2],
-                password: quiz_password.value
-            }
-            enter_password_div.classList.add('hidden');
-            quiz_password.value = '';
-            parse_qjson(JSON.parse(json.qjson));
-            add_question_btn.classList.remove('hidden');
-            exam_setup_div.classList.remove('hidden');
-        }
-    } catch(error) {
-        console.error(error.message);
-    }
-}
-
 async function fetch_exams() {
     const url = '/api/fetch_exams';
     try {
@@ -846,6 +810,15 @@ function on_keydown(e) {
     if(cur_editor) {
         if(e.key === 'Enter') {
             on_edit_done();
+            return;
+        }
+    } else {
+        if(e.key === 'Enter') {
+            console.log(e.target);
+            if(e.target.classList.contains('quiz_password')) {
+                on_password_entered(e);
+                return;
+            }
         }
     }
 }
