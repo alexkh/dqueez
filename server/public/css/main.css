@@ -151,6 +151,28 @@ hr {
     background-color: #f0f8ff;
 }
 
+.exam_setup {
+    border: 0.1rem solid #000;
+    padding: 0.5rem;
+}
+
+.exam_setup h2 {
+    margin: 0.1rem 0 0.1rem 1rem;
+}
+
+.exam_setup hr {
+    width: 90%;
+    margin: 0.5rem;
+}
+
+.exam_setup select {
+    font-size: 1.5rem;
+}
+
+.exam_setup .form_section {
+    margin: 0.2rem 0 0.2rem 0.5rem;
+}
+
 /* Editable Elements */
 .editable {
     padding: 0.2em;

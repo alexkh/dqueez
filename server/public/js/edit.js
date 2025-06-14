@@ -5,6 +5,7 @@ const questions_div = document.querySelector('.questions');
 const add_question_btn = document.querySelector('.add_question_btn');
 const upload_quiz_btn = document.querySelector('.upload_quiz_btn');
 const enter_password_div = document.querySelector('.enter_password');
+const exam_setup_div = document.querySelector('.exam_setup');
 let cur_editor = null; // input, currently active
 let cur_json = null; // json that will be sent to the server
 let credentials = null; // these are required to edit an existing quiz
@@ -647,6 +648,7 @@ async function fetch_quiz() {
             quiz_password.value = '';
             parse_qjson(JSON.parse(json.qjson));
             add_question_btn.classList.remove('hidden');
+            exam_setup_div.classList.remove('hidden');
         }
     } catch(error) {
         console.error(error.message);
