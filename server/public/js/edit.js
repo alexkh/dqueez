@@ -148,8 +148,6 @@ function bindAnswerTypeHandler(questionBlock) {
         updateRemoveButtonsForQuestion(questionBlock);
     });
 }
-
-
 //function for radio answer type
 function getRadioOptions() {
     const groupName = `radio_group_${Date.now()}`;
@@ -249,7 +247,7 @@ function getShortAnswer() {
         </p>
     `;
 }
-
+// function for long text answer type
 function getLongAnswer() { 
 
     return ` 
@@ -270,7 +268,7 @@ function getLongAnswer() {
         </p>
     `;
 }
-//helper function for textbox answer type, counts the number of char
+//helper function/method for textbox answer type, counts the number of char
 function updateCharCount(input) {
     const max = input.getAttribute('maxlength');
     const currentLength = input.value.length;
@@ -280,7 +278,7 @@ function updateCharCount(input) {
         counter.textContent = `${currentLength} / ${max}`;
     }
 }
-
+//TODO: need to recheck
 function getSequenceOptions() {
     return `
         <p>Arrange the items in the correct order:</p>
@@ -304,7 +302,7 @@ function getSequenceOptions() {
         </span>
     `;
 }
-
+//TODO: need to recheck
 function getDropdownOptions() {
     return `
         <p>Select one from dropdown:</p>
