@@ -25,6 +25,19 @@ function urlsafe64(base64) {
 	return base64.replace(/\//g, '_').replace(/\+/g, '-').replace(/=+$/, '')
 }
 
+// access to each quiz requires a matching password
+async function check_password(qurl, password) {
+    const rows = await db.fetch_quiz(qurl);
+    if(rows.length !== 1) {
+        throw new Error('Invalid qurl or password');
+    }
+    const password_good = await bcrypt.compare(password, rows[0].qpasswd);
+    if(!password_good) {
+        throw new Error('Invalid qurl or password');
+    }
+    return rows[0];
+}
+
 // serve the new_page.html file when the user goes to /new_exam
 app.get('/new_exam', (req, res) => {
     res.sendFile(path.join(__dirname, 'public/new_exam.html'));
@@ -81,6 +94,7 @@ app.post('/api/q/modify', async (req, res) => {
     } catch(err) { err_db(err, res) }
 });
 
+// fetch just the quiz, without any associated exams and inputs
 app.post('/api/fetch_quiz', async (req, res) => {
     try {
         console.log('trying to fetch quiz:',
@@ -98,6 +112,62 @@ app.post('/api/fetch_quiz', async (req, res) => {
             throw new Error('Invalid qurl or password');
         }
         res.status(200).json({ qjson: rows[0].qjson });
+    } catch(err) { err_db(err, res) }
+});
+
+app.post('/api/e/create', async (req, res) => {
+    try {
+        const qurl = req.headers.referer.split('/').pop();
+        console.log('creating an exam for quiz', qurl);
+        // check if password matches
+        const quiz = await check_password(qurl, req.body.password);
+        const data = {
+            qid: quiz.qid,
+            eurl: urlsafe64(crypto.randomBytes(6).toString('base64')),
+            estart: req.body.estart,
+            efinish: req.body.efinish,
+            etime_limit_seconds: req.body.etime_limit_seconds
+        };
+        const rows = await db.e_create(data);
+
+        res.status(200).json({ exam: rows[0] });
+    } catch(err) { err_db(err, res) }
+});
+
+app.post('/api/e/modify', async (req, res) => {
+    try {
+        const qurl = req.headers.referer.split('/').pop();
+        console.log('modifying an exam for quiz', qurl);
+        // check if password matches
+        const quiz = await check_password(qurl, req.body.password);
+        const data = {
+            qid: quiz.qid,
+            eurl: req.body.eurl,
+            estart: req.body.estart,
+            efinish: req.body.efinish,
+            etime_limit_seconds: req.body.etime_limit_seconds
+        };
+        const rows = await db.e_modify(data);
+
+        res.status(200).json({ exam: rows[0] });
+    } catch(err) { err_db(err, res) }
+});
+
+// fetch exams and the inputs associated with a given quiz
+app.post('/api/fetch_exams', async (req, res) => {
+    try {
+        const qurl = req.headers.referer.split('/').pop();
+        console.log('trying to fetch all exams for quiz', qurl);
+        // check if password matches
+        const quiz = await check_password(qurl, req.body.password);
+        const exams = await db.fetch_exams(quiz.qid);
+        const inputs = await db.fetch_inputs_min(quiz.qid);
+
+        res.status(200).json({
+            qjson: quiz.qjson,
+            exams,
+            inputs
+        });
     } catch(err) { err_db(err, res) }
 });
 

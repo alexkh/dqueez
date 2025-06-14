@@ -6,11 +6,16 @@ const add_question_btn = document.querySelector('.add_question_btn');
 const upload_quiz_btn = document.querySelector('.upload_quiz_btn');
 const enter_password_div = document.querySelector('.enter_password');
 const exam_setup_div = document.querySelector('.exam_setup');
+const exam_select = document.querySelector('.exam_select');
+const estart_input = document.querySelector('.exam_start');
+const efinish_input = document.querySelector('.exam_end');
+const eduration_input = document.querySelector('.exam_duration_minutes');
 let cur_editor = null; // input, currently active
 let cur_json = null; // json that will be sent to the server
 let credentials = null; // these are required to edit an existing quiz
+let all_exams = null; // raw exams information from the database
+let all_inputs = null; // all inputs linked to this quiz
 let lastSelectedRadio = null; // Track the last selected radio button
-
 
 function handleRadioClick(e) {
     const radio = e.target;
@@ -621,6 +626,8 @@ function on_cancel_send_quiz(e) {
     hide_modals();
 }
 
+// deprecated, because it only fetches quiz, we also need to edit exams
+// see fetch_exams()
 async function fetch_quiz() {
     const url = '/api/fetch_quiz';
     try {
@@ -655,8 +662,82 @@ async function fetch_quiz() {
     }
 }
 
+async function fetch_exams() {
+    const url = '/api/fetch_exams';
+    try {
+        const quiz_password = document.querySelector('.quiz_password');
+        const data = {
+            password: quiz_password.value
+        };
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json; charset=utf-8'
+            },
+            body: JSON.stringify(data)
+        });
+        const json = await response.json();
+        console.log(json);
+        if(json.qjson) {
+            // successfully loaded a quiz, which means that credentials are good
+            const url = window.location.pathname; // we extract qurl from url
+            credentials = {
+                qurl: url.split("/")[2],
+                password: quiz_password.value
+            }
+            enter_password_div.classList.add('hidden');
+            quiz_password.value = '';
+            parse_qjson(JSON.parse(json.qjson));
+            all_exams = json.exams;
+            all_inputs = json.inputs;
+            parse_exams();
+            add_question_btn.classList.remove('hidden');
+            exam_setup_div.classList.remove('hidden');
+        }
+    } catch(error) {
+        console.error(error.message);
+    }
+}
+
+function parse_exams() {
+    console.log('parsing exams...', all_exams, all_inputs);
+    exam_select.innerHTML = '';
+    for(let i = 0; i < all_exams.length; ++i) {
+        let option = document.createElement('option');
+        option.value = all_exams[i].eurl;
+        option.textContent = all_exams[i].eurl;
+        exam_select.appendChild(option);
+    }
+    let option = document.createElement('option');
+    option.value = 'create_new_exam';
+    option.textContent = 'Create New Exam';
+    exam_select.appendChild(option);
+    on_exam_selected();
+}
+
+function on_exam_selected() {
+    console.log('selected exam is:', exam_select.value);
+    let exam_ind = null;
+    for(let i = 0; i < all_exams.length; ++i) {
+        console.log(`'${all_exams[i].eurl}' === '${exam_select.value}'`);
+        if(all_exams[i].eurl === exam_select.value) {
+            console.log('... yes!');
+            exam_ind = i;
+            break;
+        }
+    }
+    if(exam_ind === null) return;
+    let st = new Date(all_exams[exam_ind].estart).toISOString().slice(0, 16);
+    let fin = new Date(all_exams[exam_ind].estart).toISOString().slice(0, 16);
+    estart_input.value = st;
+    efinish_input.value = fin;
+    eduration_input.value = Math.floor(
+        all_exams[exam_ind].etime_limit_seconds / 60);
+    console.log('start, finish:', st, fin);
+}
+
 function on_password_entered(e) {
-    fetch_quiz();
+    fetch_exams();
 }
 
 function on_copy_credentials(e) {
@@ -667,6 +748,36 @@ function on_copy_credentials(e) {
     inp.select();
     document.execCommand('copy', false);
     inp.remove();
+}
+
+// 'Schedule Exam' button clicked
+async function on_schedule_exam(e) {
+    // are we modifying existing or creating a new exam?
+    const url = exam_select.value === 'create_new_exam'? '/api/e/create':
+        '/api/e/modify';
+    try {
+        const data = {
+            password: credentials.password,
+            eurl: exam_select.value,
+            estart: estart_input.value,
+            efinish: efinish_input.value,
+            etime_limit_seconds: Math.floor(60 * eduration_input.value)
+        };
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json; charset=utf-8'
+            },
+            body: JSON.stringify(data)
+        });
+        const json = await response.json();
+        console.log(json);
+        if(json.eurl) {
+            console.log('Exam created. Next step - creating the inputs', eurl);
+        };
+    } catch(error) {
+        console.error(error.message);
+    }
 }
 
 function on_click(e) {
@@ -682,6 +793,7 @@ function on_click(e) {
     case 'hide_modals': hide_modals(); break;
     case 'password_entered': on_password_entered(e); break;
     case 'copy_credentials': on_copy_credentials(e); break;
+    case 'schedule_exam': on_schedule_exam(e); break;
     default: on_edit_done(); break;
     }
 }
