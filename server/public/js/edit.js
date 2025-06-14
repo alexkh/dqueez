@@ -10,6 +10,8 @@ const exam_select = document.querySelector('.exam_select');
 const estart_input = document.querySelector('.exam_start');
 const efinish_input = document.querySelector('.exam_end');
 const eduration_input = document.querySelector('.exam_duration_minutes');
+const inputs_table = document.querySelector('.inputs_table');
+const estudents_input = document.querySelector('.student_ids');
 let cur_editor = null; // input, currently active
 let cur_json = null; // json that will be sent to the server
 let credentials = null; // these are required to edit an existing quiz
@@ -733,6 +735,21 @@ function on_exam_selected() {
     efinish_input.value = fin;
     eduration_input.value = Math.floor(
         all_exams[exam_ind].etime_limit_seconds / 60);
+    estudents_input.value = '';
+    // fill out the inputs table
+    inputs_table.innerHTML = `<div class="thead">Student&nbsp;Id</div>
+        <div class="thead">Student Exam Url</div>`;
+    const ieid = all_exams[exam_ind].eid;
+    for(let i = 0; i < all_inputs.length; ++i) {
+        const id_div = document.createElement('div');
+        id_div.innerText = all_inputs[i].istudent_id;
+        id_div.classList.add('left_col');
+        const iurl_div = document.createElement('a');
+        iurl_div.href = 'https://dqueez.com/' + all_inputs[i].iurl;
+        iurl_div.innerText = 'https://dqueez.com/' + all_inputs[i].iurl;
+        inputs_table.appendChild(id_div);
+        inputs_table.appendChild(iurl_div);
+    }
     console.log('start, finish:', st, fin);
 }
 
@@ -761,7 +778,8 @@ async function on_schedule_exam(e) {
             eurl: exam_select.value,
             estart: estart_input.value,
             efinish: efinish_input.value,
-            etime_limit_seconds: Math.floor(60 * eduration_input.value)
+            etime_limit_seconds: Math.floor(60 * eduration_input.value),
+            estudents: estudents_input.value
         };
         const response = await fetch(url, {
             method: 'POST',

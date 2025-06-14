@@ -94,3 +94,13 @@ export async function fetch_inputs_min(qid) {
     return inputs.rows;
 }
 
+export async function create_input(stud) {
+    const input = await
+        pool.query(`insert into input (ieid, iurl, istudent_id)
+            values ($1, $2, $3)`, [
+            stud.ieid,
+            stud.iurl,
+            stud.istudent_id
+        ]);
+}
+
