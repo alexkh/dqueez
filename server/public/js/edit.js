@@ -646,6 +646,7 @@ async function fetch_quiz() {
             enter_password_div.classList.add('hidden');
             quiz_password.value = '';
             parse_qjson(JSON.parse(json.qjson));
+            add_question_btn.classList.remove('hidden');
         }
     } catch(error) {
         console.error(error.message);
@@ -696,9 +697,16 @@ function init() {
     // if the path starts with '/q/' then we are editing an existing quiz,
     // and to continue we need the teacher to enter the password
     const url = window.location.pathname;
-    console.log('qurl = ', url.split("/")[2]);
+    const qurl = url.split("/")[2]
+    const h1_word = document.querySelector('.h1_word');
+    const h1_qurl = document.querySelector('.h1_qurl');
     if(url.startsWith('/q/')) {
+        h1_word.innerText = 'Edit';
+        h1_qurl.innerText = qurl;
         enter_password_div.classList.remove('hidden');
+        add_question_btn.classList.add('hidden');
+    } else {
+        h1_word.innerText = 'Create';
     }
 
     // Initialize radio buttons (including those in static HTML)
