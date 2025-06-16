@@ -747,13 +747,23 @@ function on_password_entered(e) {
 }
 
 function on_copy_credentials(e) {
+    console.log('credentials object:', credentials);
+    console.log('password value:', credentials?.password);
+    
+    if (!credentials || !credentials.password) {
+        alert('No password available to copy');
+        return;
+    }
+    
     const inp = document.createElement('input');
     document.body.appendChild(inp);
-    inp.value = `Quiz: https://dqueez.com/q/${credentials.qurl}
- Password: ${credentials.password}`;
+    inp.value = credentials.password;
     inp.select();
     document.execCommand('copy', false);
     inp.remove();
+    
+    // Optional: Show confirmation
+    alert('Password copied to clipboard!');
 }
 
 // 'Schedule Exam' button clicked

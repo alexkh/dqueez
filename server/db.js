@@ -2,13 +2,14 @@ import dotenv from 'dotenv'
 dotenv.config()
 const DB_USER = process.env.DB_USER;
 const DB_PASS = process.env.DB_PASS;
+const DB_NAME = process.env.DB_NAME;
 
 import pg_pkg from 'pg';
 const { Pool } = pg_pkg;
 const pool = new Pool({
 	user: DB_USER,
 	host: 'localhost',
-	database: DB_USER,
+	database: DB_NAME,
 	password: DB_PASS,
 	port: 5432
 })
