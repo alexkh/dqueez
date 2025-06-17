@@ -459,6 +459,13 @@ function on_upload_quiz() {
     }
 
     const questions = questions_div.querySelectorAll('.question');
+    
+    // Check if there are no questions
+    if (questions.length === 0) {
+        alert("Error: You must add at least one question before uploading.");
+        return; // Exit the function without proceeding
+    }
+
     for(let i = 0; i < questions.length; ++i) {
         const qwording = questions[i].querySelector('.qwording').innerText;
         const q = {
