@@ -29,6 +29,8 @@ async function upload_answers() {
         });
         const json = await response.json();
         console.log(json);
+        showAnswerModal();
+
     } catch(error) {
         console.error(error.message);
     }
@@ -97,3 +99,18 @@ window.addEventListener('click', on_click);
 window.addEventListener('keydown', on_keydown);
 
 })();
+function showAnswerModal() {
+    const modal = document.getElementById("answerModal");
+    modal.classList.remove("hidden");
+
+    document.getElementById("closeAnswerModal").onclick = () => {
+        modal.classList.add("hidden");
+    };
+
+    window.onclick = (e) => {
+        if (e.target === modal) {
+            modal.classList.add("hidden");
+        }
+    };
+}
+

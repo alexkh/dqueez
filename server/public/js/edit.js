@@ -83,21 +83,19 @@ function parse_qjson(qjson) {
     gen_questions_div(questions_div, qjson.questions, qjson.points);
 }
 
-function on_upload_quiz() {
-    // Check if there are no questions
-    if (cur_json.questions.length === 0) {
-        alert("Error: You must add at least one question before uploading.");
-        return; // Exit the function without proceeding
+    function on_upload_quiz() {
+        if (cur_json.questions.length === 0) {
+            alert("Error: You must add at least one question before uploading.");
+            return;
+        }
+
+        on_send_quiz();  // Send to server
+        showModal("Quiz uploaded successfully");  // Show custom modal
     }
 
-    const preview = document.querySelector('.modal.json_preview');
-    const preview_content = preview.querySelector('.content')
-    console.log(preview_content);
-    preview_content.innerText = JSON.stringify(cur_json, null, 2);
-    preview.classList.remove('hidden');
-}
 
-function on_edit_done() {
+
+    function on_edit_done() {
     if(!cur_editor) {
         return;
     }
@@ -204,7 +202,9 @@ async function send_quiz() {
             qurl: json.qurl,
             password: json.password
         }
-        show_credentials();
+        showModal("Quiz uploaded successfully");
+
+        // show_credentials();
     } catch(error) {
         const data = { error: error.message };
         show_credentials(data);
@@ -501,3 +501,20 @@ window.addEventListener('keydown', on_keydown);
 exam_select.onchange = on_exam_select_change;
 
 })();
+
+function showModal(message) {
+    const modal = document.getElementById("customModal");
+    const modalText = document.getElementById("modalMessage");
+    const closeBtn = document.getElementById("closeModal");
+
+    modalText.textContent = message;
+    modal.classList.remove("hidden");
+
+    closeBtn.onclick = () => modal.classList.add("hidden");
+    window.onclick = (e) => {
+        if (e.target === modal) {
+            modal.classList.add("hidden");
+        }
+    };
+}
+

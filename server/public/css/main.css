@@ -258,40 +258,115 @@ hr {
 
 .modal {
     display: flex;
-    flex-direction: column;
     justify-content: center;
     align-items: center;
-    background-color: rgba(0, 0, 0, 0.8);
     position: fixed;
-    top: 0;
+    z-index: 999;
     left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 1000;
+    top: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.3);
 }
 
-.modal h1 {
-    color: #fff;
-    margin-bottom: 1rem;
-}
-
-.modal .content {
+.modal-box {
     background-color: white;
-    width: 80vw;
-    height: 50vh;
-    overflow: auto;
-    padding: 1rem;
-    border-radius: 4px;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    padding: 30px 40px;
+    text-align: center;
+    min-width: 300px;
 }
 
-.modal.credentials .content {
+
+.modal-icon {
+    font-size: 40px;
+    margin-bottom: 16px;
+    color: #f5c542; /* gold tone */
+}
+
+.modal-box p {
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 20px;
+    color: #1a1a1a;
+}
+
+.modal-box button {
+    padding: 10px 24px;
+    background-color: white;
+    border: none;
+    color: #1C73E8;
+    font-size: 16px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.modal-box button:hover {
+    background-color: #f0f0f0;
+}
+
+
+.hidden {
+    display: none;
+}
+
+#closeModal {
+    padding: 10px 20px;
+    background-color: white;
+    border: none;
+    color: #1C73E8;
+    font-size: 16px;
+    border-radius: 12px;
+    font-weight: bold;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+
+#closeModal:hover {
+    background-color: #1C73E8;
+    color: white;
+}
+
+#answerModal .modal-box {
+    background-color: white;
+    padding: 30px 40px;
+    border-radius: 12px;
+    text-align: center;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    min-width: 300px;
+}
+
+#answerModal .modal-icon {
     font-size: 2rem;
+    color: #FFBB00;
+    margin-bottom: 10px;
 }
 
-.modal button {
-    margin-top: 1rem;
-    padding: 0.5em 1em;
+#closeAnswerModal {
+    padding: 10px 20px;
+    background-color: white;
+    border: none;
+    color: #1C73E8;
+    font-size: 16px;
+    font-weight: bold;
+    border-radius: 12px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    cursor: pointer;
+    transition: background-color 0.2s ease;
 }
+
+#closeAnswerModal:hover {
+    background-color: #1C73E8;
+    color: white;
+}
+
+
+
+
 
 /* Responsive Styles */
 @media (max-width: 1000px) {
@@ -341,3 +416,5 @@ hr {
 .questions {
     width: 100%;
 }
+
+
