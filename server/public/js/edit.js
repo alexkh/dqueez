@@ -421,16 +421,10 @@ function on_change_qtype(e) {
     const qtype0 = question_div.dataset.qtype; // change from this qtype
     const qtype1 = e.target.value; // change to this qtype
     console.log(`changing qtype from _${qtype0}_ to _${qtype1}_`);
-    if((qtype0 === 'radio' && qtype1 === 'check') ||
-            (qtype0 === 'check' && qtype1 === 'radio')) {
-        console.log(`changing qtype from ${qtype0} to ${qtype1}`);
-        // between radio and check the change is trivial. only the qtype changes
-        // in qjson
-        cur_json.questions[ind].qtype = qtype1;
-    } else {
-        // it might be required to change this for some other qtypes
-        cur_json.questions[ind].qtype = qtype1;
-    }
+    
+    // just update question type, your logic is fine
+    cur_json.questions[ind].qtype = qtype1;
+
     // reload questions from cur_json
     gen_questions_div(questions_div, cur_json.questions, cur_json.points);
 }
@@ -449,7 +443,7 @@ function on_click(e) {
     case 'password_entered': on_password_entered(e); break;
     case 'copy_credentials': on_copy_credentials(e); break;
     case 'schedule_exam': on_schedule_exam(e); break;
-    case 'change_qtype': on_change_qtype(e); break;
+    // case 'change_qtype': on_change_qtype(e); break;
     default: on_edit_done(); break;
     }
 }
@@ -499,6 +493,7 @@ init();
 window.addEventListener('click', on_click);
 window.addEventListener('keydown', on_keydown);
 exam_select.onchange = on_exam_select_change;
+questions_div.addEventListener('change', on_change_qtype);
 
 })();
 
