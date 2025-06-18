@@ -1,4 +1,4 @@
-import { gen_questions_div } from './question_ops.js';
+import { gen_questions_div, append_new_question } from './question_ops.js';
 
 (function() {
 
@@ -21,19 +21,6 @@ let all_exams = null; // raw exams information from the database
 let all_inputs = null; // all inputs linked to this quiz
 let lastSelectedRadio = null; // Track the last selected radio button
 
-function handleRadioClick(e) {
-    const radio = e.target;
-    if (radio === lastSelectedRadio) {
-        // Clicking the currently selected radio - deselect it
-        setTimeout(() => {
-            radio.checked = false;
-            lastSelectedRadio = null;
-        }, 0);
-    } else {
-        lastSelectedRadio = radio;
-    }
-}
-
 function updateRemoveButtonsForQuestion(questionDiv) {
     const options = questionDiv.querySelectorAll('.option');
     const showRemove = options.length > 2;
@@ -45,322 +32,44 @@ function updateRemoveButtonsForQuestion(questionDiv) {
     });
 }
 
-
-function initRadioButtons() {
-    // Add event listeners to all radio buttons on the page
-    document.querySelectorAll('input[type="radio"]').forEach(radio => {
-        // Only add listener if not already added
-        if (!radio.hasListener) {
-            // Ensure radio has a group name
-            if (!radio.name) {
-                radio.name = 'auto_group_' + Math.floor(Math.random() * 1000000);
-            }
-            radio.addEventListener('click', handleRadioClick);
-            radio.hasListener = true; // Mark as having listener
-        }
-    });
-}
-
 //function to add questions
 function on_add_question(e) {
-    let div = document.createElement('div');
-    div.classList.add('question');
-    div.innerHTML = `
-        <div class="image">
-            <img src="/img/placeholder.webp" />
-        </div>
-        <div class="text">
-            <h2>
-                <span class="qwording editable">What will the question be?</span>
-                <input class="editor hidden" />
-                <button class="ebtn" data-action="edit">Edit</button>
-                <button data-action="remove_question">Remove Question</button>
-            </h2>
-
-            <div class="optionType">  
-                <label for="answerType">Choose an answer type: </label>
-                <select id="exam_select">
-                    <option value="default"></option>
-                    <option value="radio">Radio</option>
-                    <option value="checkboxes">Checkboxes</option> 
-                    <option value="short_answer">Short Answer</option>
-                    <option value="long_answer">Long Answer</option> 
-                </select>
-            </div>
-
-            <div class="answerType"></div>
-        </div>
-    `;
-
-    questions_div.append(div);
-
-    initRadioButtons(); 
-    updateRemoveButtonsForQuestion(div);
-    bindAnswerTypeHandler(div); // ⬅️ only bind once for the new question
-}
-
-// Main function to decide what type of input to inject (radio, checkbox, etc)
-function bindAnswerTypeHandler(questionBlock) {
-    const select = questionBlock.querySelector('.optionType select');
-    const answerContainer = questionBlock.querySelector('.answerType');
-
-    select.addEventListener('change', function () {
-        answerContainer.innerHTML = ''; // Clear previous answers
-
-        if (select.value === 'radio') {
-            answerContainer.innerHTML = getRadioOptions();
-        }
-        if (select.value === 'checkboxes') {
-            answerContainer.innerHTML = getCheckboxOptions();
-        }
-        if (select.value === 'short_answer') {
-             answerContainer.innerHTML = getShortAnswer();
-
-            const input = answerContainer.querySelector('.shortAnswer');
-            const maxInput = answerContainer.querySelector('.maxLengthControl');
-
-            if (input && maxInput) {
-                // Initial binding
-                input.addEventListener('input', () => updateCharCount(input));
-                maxInput.addEventListener('input', () => {
-                    const newMax = parseInt(maxInput.value);
-                    input.setAttribute('maxlength', newMax);
-                    updateCharCount(input);
-                });
-
-                updateCharCount(input);
-            }
-        }
-        if (select.value === 'long_answer') {
-             answerContainer.innerHTML = getLongAnswer();
-
-            const input = answerContainer.querySelector('.longAnswer');
-            const maxInput = answerContainer.querySelector('.maxLengthControl');
-
-            if (input && maxInput) {
-                // Initial binding
-                input.addEventListener('input', () => updateCharCount(input));
-                maxInput.addEventListener('input', () => {
-                    const newMax = parseInt(maxInput.value);
-                    input.setAttribute('maxlength', newMax);
-                    updateCharCount(input);
-                });
-
-                updateCharCount(input);
-            }
-        } 
-
-        // Re-init after rendering
-        initRadioButtons();
-        updateRemoveButtonsForQuestion(questionBlock);
-
-    });
-}
-
-
-//function for radio answer type
-function getRadioOptions() {
-    const groupName = `radio_group_${Date.now()}`;
-    return `
-        <p>Select one:</p>
-        <p class="option">
-            <span>
-                <input type="radio" name="${groupName}" value="Yes" />
-                <label class="answer editable">Yes</label>
-                <input class="editor hidden" />
-                <button class="ebtn" data-action="edit">Edit</button>
-            </span>
-            <span class="side_note">
-                Points: <span class="points editable">1</span>
-                <input type="number" class="editor hidden" />
-                <button class="ebtn" data-action="edit">Edit</button>
-                <button style="margin-left: 10px" data-action="remove_option">Remove</button>
-            </span>
-        </p> 
-        <p class="option">
-            <span>
-                <input type="radio" name="${groupName}" value="No" />
-                <label class="answer editable">No</label>
-                <input class="editor hidden" />
-                <button class="ebtn" data-action="edit">Edit</button>
-            </span>
-            <span class="side_note">
-                Points: <span class="points editable">0</span>
-                <input type="number" class="editor hidden" />
-                <button class="ebtn" data-action="edit">Edit</button>
-                <button style="margin-left: 10px" data-action="remove_option">Remove</button>
-            </span>
-        </p>
-        <button data-action="add_option">Add an Answer Option</button>
-    `;
-}
-
-// function for checkbox answer type
-function getCheckboxOptions() {
-    return `
-        <p>Select all that apply:</p>
-        <p class="option">
-            <span>
-                <input type="checkbox" value="Option 1" />
-                <label class="answer editable">Option 1</label>
-                <input class="editor hidden" />
-                <button class="ebtn" data-action="edit">Edit</button>
-            </span>
-            <span class="side_note">
-                Points: <span class="points editable">1</span>
-                <input type="number" class="editor hidden" />
-                <button class="ebtn" data-action="edit">Edit</button>
-                <button style="margin-left: 10px" data-action="remove_option">Remove</button>
-            </span>
-        </p> 
-        <p class="option">
-            <span>
-                <input type="checkbox" value="Option 2" />
-                <label class="answer editable">Option 2</label>
-                <input class="editor hidden" />
-                <button class="ebtn" data-action="edit">Edit</button>
-            </span>
-            <span class="side_note">
-                Points: <span class="points editable">0</span>
-                <input type="number" class="editor hidden" />
-                <button class="ebtn" data-action="edit">Edit</button>
-                <button style="margin-left: 10px" data-action="remove_option">Remove</button>
-            </span>
-        </p>
-        <button data-action="add_option">Add an Answer Option</button>
-    `;
-}
-
-// function for short text answer type
-function getShortAnswer() {
-    const defaultMax = 50;
-
-    return ` 
-        <p class="option short-answer"> 
-            <input 
-                type="text" 
-                placeholder="Answer is here" 
-                class="shortAnswer" 
-                maxlength="${defaultMax}" />
-            <small class="charCount">0 / ${defaultMax}</small> 
-            
-        </p>
-        <p>
-            <label>
-                Max Length: 
-                <input type="number" class="maxLengthControl" value="${defaultMax}" min="1" />
-            </label>
-            <span class="side_note">
-                Points: <span class="points editable">0</span>
-                <input type="number" class="editor hidden" />
-                <button class="ebtn" data-action="edit">Edit</button>
-            </span>
-        </p>
-    `;
-}
-
-// function for long text answer type
-function getLongAnswer() { 
-
-    return ` 
-        <p class="option long-answer"> 
-            <textarea 
-                placeholder="Answer is here" 
-                class="longAnswer"
-                rows="10"
-                cols="100"
-            ></textarea> 
-        </p>
-        <p> 
-            <span class="side_note">
-                Points: <span class="points editable">0</span>
-                <input type="number" class="editor hidden" />
-                <button class="ebtn" data-action="edit">Edit</button>
-            </span>
-        </p>
-    `;
-}
-
-//helper function/method for textbox answer type, counts the number of char
-function updateCharCount(input) {
-    const max = input.getAttribute('maxlength');
-    const currentLength = input.value.length;
-    const counter = input.nextElementSibling; // the <small> element
-    
-    if (counter) {
-        counter.textContent = `${currentLength} / ${max}`;
-    }
-} 
-
-//method to hide select dropdown answer options when saved
-function hideExamSelect() {
-    const examSelect = document.getElementById('exam_select');
-    if (examSelect) {
-        examSelect.classList.add('hidden');  
-    }
+    append_new_question(questions_div, cur_json.questions, cur_json.points);
 }
 
 function on_remove_question(e) {
-    const questionDiv = e.target.closest('.question');
-    if (questionDiv) {
-        questionDiv.remove();
-    }
+    const question_div = e.target.closest('.question');
+    const ind = 1 * question_div.dataset.question_ind; // index in qjson array
+    cur_json.questions.splice(ind, 1);
+    cur_json.points.splice(ind, 1);
+    // reload questions from cur_json and re-index all questions in the process
+    gen_questions_div(questions_div, cur_json.questions, cur_json.points);
 }
 
-
-//functio to create/add new answer option
-function add_answerOption(e) {
-    const btn = e.target;
-    const parent_node = btn.parentNode;
-    const questionDiv = btn.closest('.question');
-
-    // Determine input type: radio or checkbox
-    let inputType = 'radio';
-    if (questionDiv.querySelector('input[type="checkbox"]')) {
-        inputType = 'checkbox';
-    }
-
-    // Determine group name (only needed for radio inputs)
-    let groupName = '';
-    if (inputType === 'radio') {
-        const existingRadio = questionDiv.querySelector('input[type="radio"]');
-        groupName = existingRadio ? existingRadio.name : `radio_group_${Date.now()}`;
-    }
-
-    const node = document.createElement('p');
-    node.classList.add('option');
-
-    node.innerHTML = `
-        <span>
-            <input type="${inputType}" ${inputType === 'radio' ? `name="${groupName}"` : ''} value="New Option" />
-            <label class="answer editable">New Option</label>
-            <input class="editor hidden" />
-            <button class="ebtn" data-action="edit">Edit</button>
-        </span>
-        <span class="side_note">
-            Points: <span class="points editable">0</span>
-            <input type="number" class="editor hidden" />
-            <button class="ebtn" data-action="edit">Edit</button>
-            <button style="margin-left: 10px" data-action="remove_option">Remove</button>
-        </span>
-    `;
-
-    parent_node.insertBefore(node, btn);
-
-    // Reinitialize interactions
-    initRadioButtons();
-    updateRemoveButtonsForQuestion(questionDiv);
+// append a new option for an existing answer
+function on_add_option(e) {
+    const question_div = e.target.closest('.question');
+    const ind = 1 * question_div.dataset.question_ind; // index in qjson array
+    const qtype = question_div.dataset.qtype;
+    cur_json.questions[ind].options.push('Sometimes');
+    cur_json.points[ind].options.push(['Sometimes', '0']);
+    // reload questions from cur_json
+    gen_questions_div(questions_div, cur_json.questions, cur_json.points);
 }
-
-
 
 function on_remove_option(e) {
-    const option = e.target.closest('.option');
-    const questionDiv = e.target.closest('.question');
-    if (option) {
-        option.remove();
-        updateRemoveButtonsForQuestion(questionDiv);
-    }
+    const question_div = e.target.closest('.question');
+    const ind = 1 * question_div.dataset.question_ind; // index in qjson array
+    const qtype = question_div.dataset.qtype;
+
+    const option_div = e.target.closest('.option');
+    console.log(`option_div = `, option_div);
+    const option_ind = 1 * option_div.dataset.option_ind;
+    console.log(`removing option ${option_ind} from question ${ind}`);
+    cur_json.questions[ind].options.splice(option_ind, 1);
+    cur_json.points[ind].options.splice(option_ind, 1);
+    // reload questions from cur_json
+    gen_questions_div(questions_div, cur_json.questions, cur_json.points);
 }
 
 function parse_qjson(qjson) {
@@ -375,48 +84,16 @@ function parse_qjson(qjson) {
 }
 
 function on_upload_quiz() {
-    const quiz = {
-        questions: [],
-        points: []
-    }
-
-    const questions = questions_div.querySelectorAll('.question');
-    
     // Check if there are no questions
-    if (questions.length === 0) {
+    if (cur_json.questions.length === 0) {
         alert("Error: You must add at least one question before uploading.");
         return; // Exit the function without proceeding
     }
 
-    for(let i = 0; i < questions.length; ++i) {
-        const qwording = questions[i].querySelector('.qwording').innerText;
-        const q = {
-            qtype: questions[i].dataset.qtype,
-            image: '',
-            question: qwording,
-            options: []
-        };
-        const p = {
-            options: []
-        };
-        const options = questions[i].querySelectorAll('.option');
-        console.log('number of options: ', options.length)
-        for(let j = 0; j < options.length; ++j) {
-            const option = options[j].querySelector('.answer').innerText;
-            const points = options[j].querySelector('.points').innerText;
-            q.options.push(option);
-            p.options.push([option, points]);
-        }
-        quiz.questions.push(q);
-        quiz.points.push(p);
-    }
-
-    cur_json = quiz;
-
     const preview = document.querySelector('.modal.json_preview');
     const preview_content = preview.querySelector('.content')
     console.log(preview_content);
-    preview_content.innerText = JSON.stringify(quiz, null, 2);
+    preview_content.innerText = JSON.stringify(cur_json, null, 2);
     preview.classList.remove('hidden');
 }
 
@@ -424,15 +101,31 @@ function on_edit_done() {
     if(!cur_editor) {
         return;
     }
+
     const editable = cur_editor.parentNode.querySelector('.editable');
     const editor = cur_editor.parentNode.querySelector('.editor');
     const ebtn = cur_editor.parentNode.querySelector('.ebtn');
 
-    editable.innerText = editor.value;
-    editable.classList.remove('hidden');
-    editor.classList.add('hidden');
-    ebtn.innerText = 'Edit';
+    const question_div = cur_editor.closest('.question');
+    const ind = 1 * question_div.dataset.question_ind; // index in qjson array
+    const qtype = question_div.dataset.qtype;
+
+    console.log('data-field: ', editor.dataset.field);
+    if(editor.dataset.field === 'question') {
+        cur_json.questions[ind].question = editor.value;
+    } else {
+        const option_div = cur_editor.closest('.option');
+        const option_ind = 1 * option_div.dataset.option_ind;
+        if(editor.dataset.field === 'option') {
+            cur_json.questions[ind].options[option_ind] = editor.value;
+            cur_json.points[ind].options[option_ind][0] = editor.value;
+        } else if(editor.dataset.field === 'points') {
+            cur_json.points[ind].options[option_ind][1] = editor.value;
+        }
+    }
     cur_editor = null;
+    // reload questions from cur_json
+    gen_questions_div(questions_div, cur_json.questions, cur_json.points);
 }
 
 function on_edit_wording(e) {
@@ -723,6 +416,26 @@ async function on_schedule_exam(e) {
     }
 }
 
+function on_change_qtype(e) {
+    const question_div = e.target.closest('.question');
+    const ind = 1 * question_div.dataset.question_ind; // index in qjson array
+    const qtype0 = question_div.dataset.qtype; // change from this qtype
+    const qtype1 = e.target.value; // change to this qtype
+    console.log(`changing qtype from _${qtype0}_ to _${qtype1}_`);
+    if((qtype0 === 'radio' && qtype1 === 'check') ||
+            (qtype0 === 'check' && qtype1 === 'radio')) {
+        console.log(`changing qtype from ${qtype0} to ${qtype1}`);
+        // between radio and check the change is trivial. only the qtype changes
+        // in qjson
+        cur_json.questions[ind].qtype = qtype1;
+    } else {
+        // it might be required to change this for some other qtypes
+        cur_json.questions[ind].qtype = qtype1;
+    }
+    // reload questions from cur_json
+    gen_questions_div(questions_div, cur_json.questions, cur_json.points);
+}
+
 function on_click(e) {
     const action = e.target?.dataset?.action;
     if (!action) {
@@ -732,7 +445,7 @@ function on_click(e) {
     switch(action) {
     case 'add_question': on_add_question(e); break;
     case 'remove_question': on_remove_question(e); break;
-    case 'add_option': add_answerOption(e); break;
+    case 'add_option': on_add_option(e); break;
     case 'remove_option': on_remove_option(e); break;
     case 'upload_quiz': on_upload_quiz(e); break;
     case 'edit': on_edit_wording(e); break;
@@ -742,6 +455,7 @@ function on_click(e) {
     case 'password_entered': on_password_entered(e); break;
     case 'copy_credentials': on_copy_credentials(e); break;
     case 'schedule_exam': on_schedule_exam(e); break;
+    case 'change_qtype': on_change_qtype(e); break;
     default: on_edit_done(); break;
     }
 }
@@ -778,10 +492,12 @@ function init() {
         add_question_btn.classList.add('hidden');
     } else {
         h1_word.innerText = 'Create';
+        cur_json = {
+            "questions": [],
+            "points": []
+        }
+        append_new_question(questions_div, cur_json.questions, cur_json.points);
     }
-
-    // Initialize radio buttons (including those in static HTML)
-    initRadioButtons();
 }
 
 init();

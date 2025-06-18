@@ -24,6 +24,31 @@ export function gen_question(ind, question, points) {
     }
 }
 
+export function append_new_question(questions_div, questions, points) {
+    questions.push({
+              "qtype": "radio",
+              "image": "/img/placeholder.webp",
+              "question": "What will the question be?",
+              "options": [
+                "Yes",
+                "No"
+              ]
+            });
+    points.push({
+              "options": [
+                [
+                  "Yes",
+                  "1"
+                ],
+                [
+                  "No",
+                  "0"
+                ]
+              ]
+            });
+    gen_questions_div(questions_div, questions, points);
+}
+
 export function gather_answers(questions_div) {
     const all_questions = questions_div.querySelectorAll('.question');
     const answers = [];
@@ -46,10 +71,29 @@ export function gather_answer(question_div) {
     }
 }
 
+function mk_qtype_selector(qtype) {
+    const radio_selected = qtype === 'radio'? ` selected="selected" `: ``;
+    const check_selected = qtype === 'check'? ` selected="selected" `: ``;
+    const number_selected = qtype === 'number'? ` selected="selected" `: ``;
+    const word_selected = qtype === 'word'? ` selected="selected" `: ``;
+    return `
+            <div class="qtype_sel_wrap">
+                <label>Choose an answer type: </label>
+                <select data-action="change_qtype" class="qtype_sel">
+                    <option value="radio" ${radio_selected}>Radio</option>
+                    <option value="check" ${check_selected}>Checkboxes</option>
+                    <option value="number" ${number_selected}>Number</option>
+                    <option value="word" ${word_selected}>Word</option>
+                </select>
+            </div>
+`;
+}
+
 function gen_question_radio(ind, question, points) {
+    const qtype = 'radio';
     const div = document.createElement('div');
     div.classList.add('question');
-    div.dataset.qtype = 'radio';
+    div.dataset.qtype = qtype;
     div.dataset.question_ind = ind; // question index in the array from 0 to n
     if(points) { // editable version
         let html = `
@@ -58,26 +102,29 @@ function gen_question_radio(ind, question, points) {
             </div>
             <div class="text">
               <h2><span class="qwording editable">${question.question}</span>
-                <input class="editor hidden" />
+                <input class="editor hidden" data-field="question" />
                 <button class="ebtn"
                     data-action="edit">Edit</button>
+                <button data-action="remove_question">Remove Question</button>
               </h2>
-        `;
+        ` + mk_qtype_selector(qtype);
         for(let i = 0; i < question.options.length; ++i) {
             html += `
-              <p class="option">
+              <p class="option" data-option_ind="${i}">
                 <span>
                   <input type="radio" name="radio_group_${ind}"
                         value="${question.options[i]}" />
                   <label class="answer editable">${question.options[i]}</label>
-                  <input class="editor hidden">
+                  <input class="editor hidden" data-field="option">
                   <button class="ebtn" data-action="edit">Edit</button>
                 </span>
                 <span class="side_note">
                   Points: <span
                     class="points editable">${points.options[i][1]}</span>
-                  <input type="number" class="editor hidden" />
+                  <input type="number" data-field="points"
+                        class="editor hidden" />
                   <button class="ebtn" data-action="edit">Edit</button>
+                  <button data-action="remove_option">Remove</button>
                 </span>
               </p>
             `;
@@ -116,9 +163,10 @@ function gen_question_radio(ind, question, points) {
 }
 
 function gen_question_check(ind, question, points) {
+    const qtype = 'check';
     const div = document.createElement('div');
     div.classList.add('question');
-    div.dataset.qtype = 'check';
+    div.dataset.qtype = qtype;
     div.dataset.question_ind = ind; // question index in the array from 0 to n
     if(points) { // editable version
         let html = `
@@ -127,26 +175,29 @@ function gen_question_check(ind, question, points) {
             </div>
             <div class="text">
               <h2><span class="qwording editable">${question.question}</span>
-                <input class="editor hidden" />
+                <input class="editor hidden" data-field="question" />
                 <button class="ebtn"
                     data-action="edit">Edit</button>
+                <button data-action="remove_question">Remove Question</button>
               </h2>
-        `;
+        ` + mk_qtype_selector(qtype);
         for(let i = 0; i < question.options.length; ++i) {
             html += `
-              <p class="option">
+              <p class="option" data-option_ind="${i}">
                 <span>
                   <input type="checkbox" name="radio_group_${ind}"
                         value="${question.options[i]}" />
                   <label class="answer editable">${question.options[i]}</label>
-                  <input class="editor hidden">
+                  <input class="editor hidden" data-field="option">
                   <button class="ebtn" data-action="edit">Edit</button>
                 </span>
                 <span class="side_note">
                   Points: <span
                     class="points editable">${points.options[i][1]}</span>
-                  <input type="number" class="editor hidden" />
+                  <input type="number" data-field="points"
+                        class="editor hidden" />
                   <button class="ebtn" data-action="edit">Edit</button>
+                  <button data-action="remove_option">Remove</button>
                 </span>
               </p>
             `;
