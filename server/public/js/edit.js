@@ -1,15 +1,25 @@
-'use strict';
+import { gen_questions_div } from './question_ops.js';
+
 (function() {
 
 const questions_div = document.querySelector('.questions');
 const add_question_btn = document.querySelector('.add_question_btn');
 const upload_quiz_btn = document.querySelector('.upload_quiz_btn');
 const enter_password_div = document.querySelector('.enter_password');
+const exam_setup_div = document.querySelector('.exam_setup');
+const exam_select = document.querySelector('.exam_select');
+const estart_input = document.querySelector('.exam_start');
+const efinish_input = document.querySelector('.exam_end');
+const eduration_input = document.querySelector('.exam_duration_minutes');
+const inputs_table = document.querySelector('.inputs_table');
+const estudents_input = document.querySelector('.student_ids');
+let old_exam_select_value = null; // if exam_select changes - update exam view
 let cur_editor = null; // input, currently active
 let cur_json = null; // json that will be sent to the server
 let credentials = null; // these are required to edit an existing quiz
+let all_exams = null; // raw exams information from the database
+let all_inputs = null; // all inputs linked to this quiz
 let lastSelectedRadio = null; // Track the last selected radio button
-
 
 function handleRadioClick(e) {
     const radio = e.target;
@@ -387,49 +397,6 @@ function on_remove_option(e) {
     }
 }
 
-function add_question(question, points) {
-    console.log('adding question', points);
-    let div = document.createElement('div');
-    div.classList.add('question');
-    let html = `
-        <div class="image">
-            <img src="/img/placeholder.webp" />
-        </div>
-        <div class="text">
-          <h2><span class="qwording editable">${question.question}</span>
-            <input class="editor hidden" />
-            <button class="ebtn"
-                data-action="edit">Edit</button>
-          </h2>
-    `;
-    for(let i = 0; i < question.options.length; ++i) {
-        html += `
-          <p class="option">
-            <span>
-              <input type="radio" name="radio_group_${Date.now()}" value="${question.options[i]}" />
-              <label class="answer editable">${question.options[i]}</label>
-              <input class="editor hidden">
-              <button class="ebtn" data-action="edit">Edit</button>
-            </span>
-            <span class="side_note">
-              Points: <span class="points editable">${points.options[i][1]}</span>
-              <input type="number" class="editor hidden" />
-              <button class="ebtn" data-action="edit">Edit</button>
-            </span>
-          </p>
-        `;
-    }
-    html += `
-         <button data-action="add_option">Add an Answer Option</button>
-        </div>
-    `;
-    div.innerHTML = html;
-    questions_div.append(div);
-
-    // Initialize radio buttons in the new question
-    initRadioButtons();
-}
-
 function parse_qjson(qjson) {
     console.log('parsing qjson', qjson);
     if(!qjson.questions || !qjson.points || qjson.questions.length < 1 ||
@@ -438,9 +405,7 @@ function parse_qjson(qjson) {
         return;
     }
 
-    for(let i = 0; i < qjson.questions.length; ++i) {
-        add_question(qjson.questions[i], qjson.points[i]);
-    }
+    gen_questions_div(questions_div, qjson.questions, qjson.points);
 }
 
 function on_upload_quiz() {
@@ -450,10 +415,17 @@ function on_upload_quiz() {
     }
 
     const questions = questions_div.querySelectorAll('.question');
+    
+    // Check if there are no questions
+    if (questions.length === 0) {
+        alert("Error: You must add at least one question before uploading.");
+        return; // Exit the function without proceeding
+    }
+
     for(let i = 0; i < questions.length; ++i) {
         const qwording = questions[i].querySelector('.qwording').innerText;
         const q = {
-            qtype: 'radio',
+            qtype: questions[i].dataset.qtype,
             image: '',
             question: qwording,
             options: []
@@ -620,12 +592,12 @@ function on_cancel_send_quiz(e) {
     hide_modals();
 }
 
-async function fetch_quiz() {
-    const url = '/api/fetch_quiz';
+async function fetch_exams() {
+    const url = '/api/fetch_exams';
     try {
         const quiz_password = document.querySelector('.quiz_password');
         const data = {
-            password: quiz_password.value
+            password: credentials?.password || quiz_password.value
         };
         const response = await fetch(url, {
             method: 'POST',
@@ -639,21 +611,107 @@ async function fetch_quiz() {
         if(json.qjson) {
             // successfully loaded a quiz, which means that credentials are good
             const url = window.location.pathname; // we extract qurl from url
-            credentials = {
-                qurl: url.split("/")[2],
-                password: quiz_password.value
+            if(!credentials) {
+                credentials = {
+                    qurl: url.split("/")[2],
+                    password: quiz_password.value
+                }
+                enter_password_div.classList.add('hidden');
+                quiz_password.value = '';
             }
-            enter_password_div.classList.add('hidden');
-            quiz_password.value = '';
             parse_qjson(JSON.parse(json.qjson));
+            all_exams = json.exams;
+            all_inputs = json.inputs;
+            parse_exams();
+            add_question_btn.classList.remove('hidden');
+            exam_setup_div.classList.remove('hidden');
         }
     } catch(error) {
         console.error(error.message);
     }
 }
 
+function parse_exams() {
+    console.log('parsing exams...', all_exams, all_inputs);
+    exam_select.innerHTML = '';
+    for(let i = 0; i < all_exams.length; ++i) {
+        let option = document.createElement('option');
+        option.value = all_exams[i].eurl;
+        option.textContent = all_exams[i].eurl;
+        exam_select.appendChild(option);
+    }
+    let option = document.createElement('option');
+    option.value = 'create_new_exam';
+    option.textContent = 'Create New Exam';
+    exam_select.appendChild(option);
+    on_exam_selected();
+}
+
+function on_exam_selected() {
+    console.log('selected exam is:', exam_select.value);
+    let exam_ind = null;
+    for(let i = 0; i < all_exams.length; ++i) {
+        console.log(`'${all_exams[i].eurl}' === '${exam_select.value}'`);
+        if(all_exams[i].eurl === exam_select.value) {
+            console.log('... yes!');
+            exam_ind = i;
+            break;
+        }
+    }
+    if(exam_ind === null) {
+        // creating new exam so reset all the values
+        estart_input.value = '';
+        efinish_input.value = '';
+        eduration_input.value = 20;
+        inputs_table.innerHTML = '';
+        estudents_input.value = '';
+        return;
+    }
+    let st = new Date(all_exams[exam_ind].estart).toISOString().slice(0, 16);
+    let fin = new Date(all_exams[exam_ind].estart).toISOString().slice(0, 16);
+    estart_input.value = st;
+    efinish_input.value = fin;
+    eduration_input.value = Math.floor(
+        all_exams[exam_ind].etime_limit_seconds / 60);
+    estudents_input.value = '';
+    // fill out the inputs table
+    inputs_table.innerHTML = `<div class="thead">Student&nbsp;Id</div>
+        <div class="thead">Student Exam Url</div>
+        <div class="thead">Student's Answers</div>`;
+    const ieid = all_exams[exam_ind].eid;
+    for(let i = 0; i < all_inputs.length; ++i) {
+        // all_inputs contain inputs for all exam, so we need to filter by ieid
+        if(all_inputs[i].ieid !== ieid) {
+            continue
+        }
+        const id_div = document.createElement('div');
+        id_div.innerText = all_inputs[i].istudent_id;
+        id_div.classList.add('left_col');
+        const iurl_div = document.createElement('a');
+        iurl_div.href = 'https://dqueez.com/' + all_inputs[i].iurl;
+        iurl_div.innerText = 'https://dqueez.com/' + all_inputs[i].iurl;
+        const ijson_div = document.createElement('div');
+        ijson_div.innerText = all_inputs[i].ijson; // .replace(/\\/g, "");
+
+        inputs_table.appendChild(id_div);
+        inputs_table.appendChild(iurl_div);
+        inputs_table.appendChild(ijson_div);
+    }
+    console.log('start, finish:', st, fin);
+}
+
+function on_exam_select_change(e) {
+    console.log('Exam Select changed from ', old_exam_select_value,
+        ' to ', exam_select.value);
+    if(old_exam_select_value === exam_select.value) {
+        return; // no change, it could be just clicked - no need to update view
+    }
+    old_exam_select_value = exam_select.value;
+    on_exam_selected();
+}
+
 function on_password_entered(e) {
-    fetch_quiz();
+    fetch_exams();
 }
 
 function on_copy_credentials(e) {
@@ -664,6 +722,38 @@ function on_copy_credentials(e) {
     inp.select();
     document.execCommand('copy', false);
     inp.remove();
+}
+
+// 'Schedule Exam' button clicked
+async function on_schedule_exam(e) {
+    // are we modifying existing or creating a new exam?
+    const url = exam_select.value === 'create_new_exam'? '/api/e/create':
+        '/api/e/modify';
+    try {
+        const data = {
+            password: credentials.password,
+            eurl: exam_select.value,
+            estart: estart_input.value,
+            efinish: efinish_input.value,
+            etime_limit_seconds: Math.floor(60 * eduration_input.value),
+            estudents: estudents_input.value
+        };
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json; charset=utf-8'
+            },
+            body: JSON.stringify(data)
+        });
+        const json = await response.json();
+        console.log(json);
+        if(json.exam.eurl) {
+            console.log('Exam created. Refreshing the view');
+            fetch_exams();
+        };
+    } catch(error) {
+        console.error(error.message);
+    }
 }
 
 function on_click(e) {
@@ -679,6 +769,7 @@ function on_click(e) {
     case 'hide_modals': hide_modals(); break;
     case 'password_entered': on_password_entered(e); break;
     case 'copy_credentials': on_copy_credentials(e); break;
+    case 'schedule_exam': on_schedule_exam(e); break;
     default: on_edit_done(); break;
     }
 }
@@ -687,6 +778,15 @@ function on_keydown(e) {
     if(cur_editor) {
         if(e.key === 'Enter') {
             on_edit_done();
+            return;
+        }
+    } else {
+        if(e.key === 'Enter') {
+            console.log(e.target);
+            if(e.target.classList.contains('quiz_password')) {
+                on_password_entered(e);
+                return;
+            }
         }
     }
 }
@@ -696,9 +796,16 @@ function init() {
     // if the path starts with '/q/' then we are editing an existing quiz,
     // and to continue we need the teacher to enter the password
     const url = window.location.pathname;
-    console.log('qurl = ', url.split("/")[2]);
+    const qurl = url.split("/")[2]
+    const h1_word = document.querySelector('.h1_word');
+    const h1_qurl = document.querySelector('.h1_qurl');
     if(url.startsWith('/q/')) {
+        h1_word.innerText = 'Edit';
+        h1_qurl.innerText = qurl;
         enter_password_div.classList.remove('hidden');
+        add_question_btn.classList.add('hidden');
+    } else {
+        h1_word.innerText = 'Create';
     }
 
     // Initialize radio buttons (including those in static HTML)
@@ -709,5 +816,6 @@ init();
 
 window.addEventListener('click', on_click);
 window.addEventListener('keydown', on_keydown);
+exam_select.onchange = on_exam_select_change;
 
 })();

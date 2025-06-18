@@ -25,7 +25,8 @@
       </div>
 
       <div class="main">
-        <h1>Edit Deez Queez</h1>
+        <h1><span class="h1_word"></span> Deez Queez
+            <span class="h1_qurl"></span></h1>
       </div>
 
       <div class="enter_password hidden">
@@ -35,6 +36,44 @@
     </div>
 
     <div class="exam">
+
+      <div class="exam_setup hidden">
+        <h2>Manage exams associated with this quiz <select class="exam_select">
+            <option value="create_new_exam">Create New Exam</option>
+          </select>
+        </h2>
+        <center><hr></center>
+
+        <div class="form_section">
+          <label>Start Date & Time:</label>
+          <input type="datetime-local" class="exam_start" />
+        </div>
+        <div class="form_section">
+          <label>End Date & Time:</label>
+          <input type="datetime-local" class="exam_end" />
+        </div>
+        <div class="form_section">
+        Time zone: America/Montreal
+        </div>
+        <div class="form_section">
+          <label>Exam Duration (minutes):</label>
+          <input type="number" class="exam_duration_minutes" value="20" />
+        </div>
+        <div class="inputs_wrap">
+          <div class="inputs_table">
+          </div>
+        </div>
+        <div class="form_section">
+          <label>Add Student IDs (one per line):</label>
+          <textarea class="student_ids" rows="5"></textarea>
+        </div>
+
+        <center>
+          <button data-action="schedule_exam">Schedule Exam</button>
+        </center>
+
+      </div>
+
       <div class="questions">
       </div>
 
@@ -63,6 +102,6 @@
     </div>
 
   </body>
-  <script src="/js/edit.js"></script>
+  <script type="module" src="/js/edit.js"></script>
   <!-- <script src="/js/answer-options.js"></script> -->
 </html>
