@@ -397,49 +397,6 @@ function on_remove_option(e) {
     }
 }
 
-function add_question(question, points) {
-    console.log('adding question', points);
-    let div = document.createElement('div');
-    div.classList.add('question');
-    let html = `
-        <div class="image">
-            <img src="/img/placeholder.webp" />
-        </div>
-        <div class="text">
-          <h2><span class="qwording editable">${question.question}</span>
-            <input class="editor hidden" />
-            <button class="ebtn"
-                data-action="edit">Edit</button>
-          </h2>
-    `;
-    for(let i = 0; i < question.options.length; ++i) {
-        html += `
-          <p class="option">
-            <span>
-              <input type="radio" name="radio_group_${Date.now()}" value="${question.options[i]}" />
-              <label class="answer editable">${question.options[i]}</label>
-              <input class="editor hidden">
-              <button class="ebtn" data-action="edit">Edit</button>
-            </span>
-            <span class="side_note">
-              Points: <span class="points editable">${points.options[i][1]}</span>
-              <input type="number" class="editor hidden" />
-              <button class="ebtn" data-action="edit">Edit</button>
-            </span>
-          </p>
-        `;
-    }
-    html += `
-         <button data-action="add_option">Add an Answer Option</button>
-        </div>
-    `;
-    div.innerHTML = html;
-    questions_div.append(div);
-
-    // Initialize radio buttons in the new question
-    initRadioButtons();
-}
-
 function parse_qjson(qjson) {
     console.log('parsing qjson', qjson);
     if(!qjson.questions || !qjson.points || qjson.questions.length < 1 ||
@@ -448,9 +405,7 @@ function parse_qjson(qjson) {
         return;
     }
 
-    for(let i = 0; i < qjson.questions.length; ++i) {
-        add_question(qjson.questions[i], qjson.points[i]);
-    }
+    gen_questions_div(questions_div, qjson.questions, qjson.points);
 }
 
 function on_upload_quiz() {
