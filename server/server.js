@@ -94,6 +94,22 @@ app.post('/api/q/modify', async (req, res) => {
     } catch(err) { err_db(err, res) }
 });
 
+// save answers from the student into the input table
+app.post('/api/upload_answers', async (req, res) => {
+    try {
+        console.log('saving answers submitted by student',
+            req.body.answers);
+        const iurl = req.headers.referer.split('/').pop();
+        const data = {
+            iurl: req.headers.referer.split('/').pop(),
+            student_id: req.body.student_id,
+            answers: JSON.stringify(req.body.answers)
+        }
+        const rows = await db.save_answers(data);
+        res.status(200).json({ rows });
+    } catch(err) { err_db(err, res) }
+});
+
 // fetch just the questions without the answers
 app.post('/api/fetch_questions', async (req, res) => {
     try {

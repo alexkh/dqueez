@@ -87,7 +87,7 @@ export async function fetch_exams(qid) {
 
 export async function fetch_inputs_min(qid) {
     const inputs = await
-        pool.query(`select iid, ieid, iurl, istudent_id from input
+        pool.query(`select iid, ieid, iurl, istudent_id, ijson from input
             inner join exam on ieid = eid where eqid = $1
             order by ieid, iid desc`,
         [qid]);
@@ -110,5 +110,13 @@ export async function fetch_questions(iurl, student_id) {
             inner join quiz on qid = eqid where iurl = $1 and istudent_id = $2`,
             [ iurl, student_id ]);
     return questions.rows;
+}
+
+export async function save_answers(data) {
+    const input = await
+        pool.query(`update input set ijson = $1 where iurl = $2
+            and istudent_id = $3 returning *`,
+            [ data.answers, data.iurl, data.student_id ]);
+    return input.rows;
 }
 

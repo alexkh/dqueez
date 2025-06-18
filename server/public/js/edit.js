@@ -1,4 +1,5 @@
-'use strict';
+import { gen_questions_div } from './question_ops.js';
+
 (function() {
 
 const questions_div = document.querySelector('.questions');
@@ -713,7 +714,8 @@ function on_exam_selected() {
     estudents_input.value = '';
     // fill out the inputs table
     inputs_table.innerHTML = `<div class="thead">Student&nbsp;Id</div>
-        <div class="thead">Student Exam Url</div>`;
+        <div class="thead">Student Exam Url</div>
+        <div class="thead">Student's Answers</div>`;
     const ieid = all_exams[exam_ind].eid;
     for(let i = 0; i < all_inputs.length; ++i) {
         // all_inputs contain inputs for all exam, so we need to filter by ieid
@@ -726,8 +728,12 @@ function on_exam_selected() {
         const iurl_div = document.createElement('a');
         iurl_div.href = 'https://dqueez.com/' + all_inputs[i].iurl;
         iurl_div.innerText = 'https://dqueez.com/' + all_inputs[i].iurl;
+        const ijson_div = document.createElement('div');
+        ijson_div.innerText = all_inputs[i].ijson; // .replace(/\\/g, "");
+
         inputs_table.appendChild(id_div);
         inputs_table.appendChild(iurl_div);
+        inputs_table.appendChild(ijson_div);
     }
     console.log('start, finish:', st, fin);
 }
