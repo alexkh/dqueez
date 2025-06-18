@@ -425,7 +425,7 @@ function on_upload_quiz() {
     for(let i = 0; i < questions.length; ++i) {
         const qwording = questions[i].querySelector('.qwording').innerText;
         const q = {
-            qtype: 'radio',
+            qtype: questions[i].dataset.qtype,
             image: '',
             question: qwording,
             options: []
