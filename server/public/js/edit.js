@@ -199,7 +199,6 @@ async function send_quiz() {
             },
             body: JSON.stringify(cur_json)
         });
-        hideExamSelect();
         const json = await response.json();
         credentials = {
             qurl: json.qurl,
@@ -437,11 +436,6 @@ function on_change_qtype(e) {
 }
 
 function on_click(e) {
-    const action = e.target?.dataset?.action;
-    if (!action) {
-        on_edit_done();
-        return;
-    }
     switch(action) {
     case 'add_question': on_add_question(e); break;
     case 'remove_question': on_remove_question(e); break;
@@ -504,6 +498,6 @@ init();
 
 window.addEventListener('click', on_click);
 window.addEventListener('keydown', on_keydown);
-exam_select.addEventListener('change', on_exam_select_change);
+exam_select.onchange = on_exam_select_change;
 
 })();
