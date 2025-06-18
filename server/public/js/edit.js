@@ -79,14 +79,12 @@ function on_add_question(e) {
 
             <div class="optionType">  
                 <label for="answerType">Choose an answer type: </label>
-                <select>
+                <select id="exam_select">
                     <option value="default"></option>
                     <option value="radio">Radio</option>
-                    <option value="checkboxes">Checkboxes</option>
-                    <option value="dropdown">Dropdown</option>
+                    <option value="checkboxes">Checkboxes</option> 
                     <option value="short_answer">Short Answer</option>
-                    <option value="long_answer">Long Answer</option>
-                    <option value="sequence">Sequence</option> 
+                    <option value="long_answer">Long Answer</option> 
                 </select>
             </div>
 
@@ -96,7 +94,7 @@ function on_add_question(e) {
 
     questions_div.append(div);
 
-    initRadioButtons();
+    initRadioButtons(); 
     updateRemoveButtonsForQuestion(div);
     bindAnswerTypeHandler(div); // ⬅️ only bind once for the new question
 }
@@ -111,9 +109,11 @@ function bindAnswerTypeHandler(questionBlock) {
 
         if (select.value === 'radio') {
             answerContainer.innerHTML = getRadioOptions();
-        } else if (select.value === 'checkboxes') {
+        }
+        if (select.value === 'checkboxes') {
             answerContainer.innerHTML = getCheckboxOptions();
-        } else if (select.value === 'short_answer') {
+        }
+        if (select.value === 'short_answer') {
              answerContainer.innerHTML = getShortAnswer();
 
             const input = answerContainer.querySelector('.shortAnswer');
@@ -130,7 +130,8 @@ function bindAnswerTypeHandler(questionBlock) {
 
                 updateCharCount(input);
             }
-        }else if (select.value === 'long_answer') {
+        }
+        if (select.value === 'long_answer') {
              answerContainer.innerHTML = getLongAnswer();
 
             const input = answerContainer.querySelector('.longAnswer');
@@ -147,17 +148,16 @@ function bindAnswerTypeHandler(questionBlock) {
 
                 updateCharCount(input);
             }
-        } else if (select.value === 'sequence') {
-            answerContainer.innerHTML = getSequenceOptions();
-        } else if (select.value === 'dropdown') {
-            answerContainer.innerHTML = getDropdownOptions();
-        }
+        } 
 
         // Re-init after rendering
         initRadioButtons();
         updateRemoveButtonsForQuestion(questionBlock);
+
     });
 }
+
+
 //function for radio answer type
 function getRadioOptions() {
     const groupName = `radio_group_${Date.now()}`;
@@ -230,6 +230,7 @@ function getCheckboxOptions() {
         <button data-action="add_option">Add an Answer Option</button>
     `;
 }
+
 // function for short text answer type
 function getShortAnswer() {
     const defaultMax = 50;
@@ -257,6 +258,7 @@ function getShortAnswer() {
         </p>
     `;
 }
+
 // function for long text answer type
 function getLongAnswer() { 
 
@@ -278,6 +280,7 @@ function getLongAnswer() {
         </p>
     `;
 }
+
 //helper function/method for textbox answer type, counts the number of char
 function updateCharCount(input) {
     const max = input.getAttribute('maxlength');
@@ -287,52 +290,15 @@ function updateCharCount(input) {
     if (counter) {
         counter.textContent = `${currentLength} / ${max}`;
     }
-}
-//TODO: need to recheck
-function getSequenceOptions() {
-    return `
-        <p>Arrange the items in the correct order:</p>
-        <ul class="option sequence" style="list-style-type: none; padding: 0;">
-            <li>
-                <span class="editable">Step 1</span>
-                <input class="editor hidden" />
-                <button class="ebtn" data-action="edit">Edit</button>
-            </li>
-            <li>
-                <span class="editable">Step 2</span>
-                <input class="editor hidden" />
-                <button class="ebtn" data-action="edit">Edit</button>
-            </li>
-        </ul>
-        <button data-action="add_sequence_step">Add Step</button>
-        <span class="side_note">
-            Points: <span class="points editable">0</span>
-            <input type="number" class="editor hidden" />
-            <button class="ebtn" data-action="edit">Edit</button>
-        </span>
-    `;
-}
-//TODO: need to recheck
-function getDropdownOptions() {
-    return `
-        <p>Select one from dropdown:</p>
-        <p class="option dropdown-answer">
-            <span>
-                <select >
-                    <option>Option 1</option>
-                    <option>Option 2</option>
-                </select>
-                <button data-action="edit_dropdown">Edit Options</button>
-            </span>
-            <span class="side_note">
-                Points: <span class="points editable">0</span>
-                <input type="number" class="editor hidden" />
-                <button class="ebtn" data-action="edit">Edit</button>
-            </span>
-        </p>
-    `;
-}
+} 
 
+//method to hide select dropdown answer options when saved
+function hideExamSelect() {
+    const examSelect = document.getElementById('exam_select');
+    if (examSelect) {
+        examSelect.classList.add('hidden');  
+    }
+}
 
 function on_remove_question(e) {
     const questionDiv = e.target.closest('.question');
@@ -540,6 +506,7 @@ async function send_quiz() {
             },
             body: JSON.stringify(cur_json)
         });
+        hideExamSelect();
         const json = await response.json();
         credentials = {
             qurl: json.qurl,
@@ -757,7 +724,12 @@ async function on_schedule_exam(e) {
 }
 
 function on_click(e) {
-    switch(e.target.dataset.action) {
+    const action = e.target?.dataset?.action;
+    if (!action) {
+        on_edit_done();
+        return;
+    }
+    switch(action) {
     case 'add_question': on_add_question(e); break;
     case 'remove_question': on_remove_question(e); break;
     case 'add_option': add_answerOption(e); break;
@@ -816,6 +788,6 @@ init();
 
 window.addEventListener('click', on_click);
 window.addEventListener('keydown', on_keydown);
-exam_select.onchange = on_exam_select_change;
+exam_select.addEventListener('change', on_exam_select_change);
 
 })();
