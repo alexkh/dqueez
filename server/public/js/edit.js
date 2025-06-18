@@ -492,8 +492,8 @@ init();
 
 window.addEventListener('click', on_click);
 window.addEventListener('keydown', on_keydown);
-exam_select.onchange = on_exam_select_change;
-questions_div.addEventListener('change', on_change_qtype);
+exam_select.onchange = on_exam_select_change; 
+questions_div.addEventListener('change', on_change_qtype);  //when the value from select dropdown is change 
 
 })();
 
