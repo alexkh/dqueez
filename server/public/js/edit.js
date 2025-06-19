@@ -420,7 +420,7 @@ function on_change_qtype(e) {
     const ind = 1 * question_div.dataset.question_ind; // index in qjson array
     const qtype0 = question_div.dataset.qtype; // change from this qtype
     const qtype1 = e.target.value; // change to this qtype
-    console.log(`changing qtype from _${qtype0}_ to _${qtype1}_`);
+    console.log(`changing qtype from _${qtype0}_ to _${qtype1}_`, e.target);
     if((qtype0 === 'radio' && qtype1 === 'check') ||
             (qtype0 === 'check' && qtype1 === 'radio')) {
         console.log(`changing qtype from ${qtype0} to ${qtype1}`);
@@ -449,8 +449,14 @@ function on_click(e) {
     case 'password_entered': on_password_entered(e); break;
     case 'copy_credentials': on_copy_credentials(e); break;
     case 'schedule_exam': on_schedule_exam(e); break;
+    default: break; // on_edit_done(); break;
+    }
+}
+
+function on_change(e) {
+    switch(e.target.dataset.action) {
     case 'change_qtype': on_change_qtype(e); break;
-    default: on_edit_done(); break;
+    default: break;
     }
 }
 
@@ -498,6 +504,7 @@ init();
 
 window.addEventListener('click', on_click);
 window.addEventListener('keydown', on_keydown);
+window.addEventListener('change', on_change);
 exam_select.onchange = on_exam_select_change;
 
 })();
