@@ -477,25 +477,25 @@ function on_add_keyword(e) {
     const question_div = e.target.closest('.question');
     const ind = 1 * question_div.dataset.question_ind;
 
-    // Collect existing keyword data before changing anything
-    const keyword_divs = question_div.querySelectorAll('.keyword');
+    const keyword_divs = question_div.querySelectorAll('.keyword-item');
     const new_keywords = [];
 
     keyword_divs.forEach(div => {
-        const word = div.querySelector('.keyword_input')?.value || "";
-        const point = div.querySelector('.points_input')?.value || "1";
+        const wordEl = div.querySelector('input[data-field="keyword"]');
+        const pointEl = div.querySelector('input[data-field="keyword_points"]');
+
+        const word = wordEl ? wordEl.value || div.querySelector('.keyword')?.innerText || '' : '';
+        const point = pointEl ? pointEl.value || div.querySelector('.keyword-points')?.innerText || '1' : '1';
+
         new_keywords.push([word, point]);
     });
 
-    // Add the new empty keyword
-    new_keywords.push(["", "1"]);
+    new_keywords.push(["", "1"]); // add empty keyword
 
-    // Save updated keywords to model
     cur_json.points[ind].keywords = new_keywords;
-
-    // Re-render
     gen_questions_div(questions_div, cur_json.questions, cur_json.points);
 }
+
 
 //function to remove keyword for text type question
 function on_remove_keyword(e) {
