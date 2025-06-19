@@ -108,15 +108,18 @@ function on_edit_done() {
 
     if (field === 'question') {
         cur_json.questions[ind].question = editor.value;
+
     } else  if (qtype === 'radio' || qtype === 'check') {
         const option_div = cur_editor.closest('.option');
         const option_ind = Number(option_div.dataset.option_ind);
+        
         if (field === 'option') {
             cur_json.questions[ind].options[option_ind] = editor.value;
             cur_json.points[ind].options[option_ind][0] = editor.value;
         } else if (field === 'points') {
             cur_json.points[ind].options[option_ind][1] = Number(editor.value);
         }
+
     } else if (qtype === 'number') {
         if (field === 'answer') {
             cur_json.questions[ind].answer = Number(editor.value);
