@@ -417,4 +417,10 @@ hr {
     width: 100%;
 }
 
+.question .option input[type="number"] {
+  width: 200px; /* or any desired width */
+  max-width: 100%;
+  padding: 5px;
+  font-size: 1rem;
+}
 

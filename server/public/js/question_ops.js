@@ -89,6 +89,8 @@ function mk_qtype_selector(qtype) {
 `;
 }
 
+//functions to generate different question types
+
 function gen_question_radio(ind, question, points) {
     const qtype = 'radio';
     const div = document.createElement('div');
@@ -192,12 +194,9 @@ function gen_question_check(ind, question, points) {
                   <button class="ebtn" data-action="edit">Edit</button>
                 </span>
                 <span class="side_note">
-                  Points: <span
-                    class="points editable">${points.options[i][1]}</span>
-                  <input type="number" data-field="points"
-                        class="editor hidden" />
+                  Points: <span class="points editable">${points.answer ?? 1}</span>
+                  <input type="number" data-field="points" class="editor hidden" />
                   <button class="ebtn" data-action="edit">Edit</button>
-                  <button data-action="remove_option">Remove</button>
                 </span>
               </p>
             `;
@@ -235,10 +234,120 @@ function gen_question_check(ind, question, points) {
 }
 
 function gen_question_number(ind, question, points) {
+    const qtype = 'number';
+    const div = document.createElement('div');
+    div.classList.add('question');
+    div.dataset.qtype = qtype;
+    div.dataset.question_ind = ind;
+
+    if (points) { // editable version
+        let html = `
+            <div class="image">
+                <img src="/img/placeholder.webp" />
+            </div>
+            <div class="text">
+              <h2>
+                <span class="qwording editable">${question.question}</span>
+                <input class="editor hidden" data-field="question" />
+                <button class="ebtn" data-action="edit">Edit</button>
+                <button data-action="remove_question">Remove Question</button>
+              </h2>
+              ${mk_qtype_selector(qtype)}
+              <p class="option" data-option_ind="0">
+                <span>
+                  <label>Answer: </label>
+                  <input type="number" value="${question.answer}" disabled />
+                  <input class="editor hidden" type="number" data-field="answer" step="any" />
+                  <button class="ebtn" data-action="edit">Edit</button>
+                </span> 
+                <span class="side_note">
+                  Points: <span class="points editable">${points.answer ?? 1}</span>
+                  <input type="number" data-field="points" class="editor hidden" />
+                  <button class="ebtn" data-action="edit">Edit</button>
+                </span>
+              </p>
+            </div>
+        `;
+        div.innerHTML = html;
+    } else { // student version
+        let html = `
+            <div class="image">
+                <img src="/img/placeholder.webp" />
+            </div>
+            <div class="text">
+              <h2><span class="qwording">${question.question}</span></h2>
+              <p class="option">
+                <label>Answer: </label>
+                <input type="number" name="number_answer_${ind}" />
+              </p>
+            </div>
+        `;
+        div.innerHTML = html;
+    }
+
+    return div;
 }
 
+ 
+
 function gen_question_word(ind, question, points) {
+    const qtype = 'word';
+    const div = document.createElement('div');
+    div.classList.add('question');
+    div.dataset.qtype = qtype;
+    div.dataset.question_ind = ind;
+
+    const keywords = points?.keywords || [];
+
+    const keywordInputs = keywords.map((kw, i) => `
+        <p class="keyword" data-keyword_ind="${i}">
+            <input type="text" class="keyword_input" data-field="keyword" value="${kw[0]}" />
+            <label>Points:</label>
+            <input type="number" class="points_input" data-field="keyword_point" value="${kw[1]}" />
+            <button class="ebtn" data-action="remove_keyword">Remove</button>
+        </p>
+    `).join('');
+
+    const keywordSection = points ? `
+        <div class="keyword_section">
+            <label><strong>Important Keywords:</strong></label>
+            ${keywordInputs}
+            <button data-action="add_keyword">Add Keyword</button>
+        </div>
+        <br>
+        <span class="side_note">
+            <em>Note: Student answers will be initially auto-scored based on keywords, then manually reviewed.</em>
+        </span>
+    ` : '';
+
+    const html = `
+        <div class="image">
+            <img src="/img/placeholder.webp" />
+        </div>
+        <div class="text">
+            <h2>
+                <span class="qwording ${points ? 'editable' : ''}">${question.question}</span>
+                ${points ? `<input class="editor hidden" data-field="question" />` : ''}
+                ${points ? `
+                    <button class="ebtn" data-action="edit">Edit</button>
+                    <button data-action="remove_question">Remove Question</button>
+                ` : ''}
+            </h2>
+            ${points ? mk_qtype_selector(qtype) : ''}
+            ${points ? keywordSection : `
+                <p class="option">
+                    <input type="text" class="student_answer" placeholder="Type your answer here..." />
+                </p>
+            `}
+        </div>
+    `;
+
+    div.innerHTML = html;
+    return div;
 }
+
+
+// -----gather answers for each type
 
 function gather_answer_radio(question_div) {
     console.log('gathering answer radio');
@@ -271,7 +380,30 @@ function gather_answer_check(question_div) {
 }
 
 function gather_answer_number(question_div) {
+    console.log('gathering answer number');
+    const result = {
+        isset: false,
+        val: null
+    };
+    const input = question_div.querySelector('input[type="number"]');
+    if (input && input.value.trim() !== '') {
+        result.isset = true;
+        result.val = input.value.trim();
+    }
+    return result;
 }
 
+
 function gather_answer_word(question_div) {
+    console.log('gathering answer word');
+    const result = {
+        isset: false,
+        val: null
+    };
+    const input = question_div.querySelector('.student_answer');
+    if (input && input.value.trim() !== '') {
+        result.isset = true;
+        result.val = input.value.trim();
+    }
+    return result;
 }

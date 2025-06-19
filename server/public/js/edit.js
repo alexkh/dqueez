@@ -83,48 +83,52 @@ function parse_qjson(qjson) {
     gen_questions_div(questions_div, qjson.questions, qjson.points);
 }
 
-    function on_upload_quiz() {
-        if (cur_json.questions.length === 0) {
-            alert("Error: You must add at least one question before uploading.");
-            return;
-        }
-
-        on_send_quiz();  // Send to server
-        showModal("Quiz uploaded successfully");  // Show custom modal
-    }
-
-
-
-    function on_edit_done() {
-    if(!cur_editor) {
+function on_upload_quiz() {
+    if (cur_json.questions.length === 0) {
+        alert("Error: You must add at least one question before uploading.");
         return;
     }
 
+    on_send_quiz();  // Send to server
+    showModal("Quiz uploaded successfully");  // Show custom modal
+}
+
+
+
+function on_edit_done() {
+    if (!cur_editor) return;
+
     const editable = cur_editor.parentNode.querySelector('.editable');
     const editor = cur_editor.parentNode.querySelector('.editor');
-    const ebtn = cur_editor.parentNode.querySelector('.ebtn');
-
     const question_div = cur_editor.closest('.question');
-    const ind = 1 * question_div.dataset.question_ind; // index in qjson array
+    const ind = Number(question_div.dataset.question_ind);
     const qtype = question_div.dataset.qtype;
 
-    console.log('data-field: ', editor.dataset.field);
-    if(editor.dataset.field === 'question') {
+    const field = editor.dataset.field;
+
+    if (field === 'question') {
         cur_json.questions[ind].question = editor.value;
-    } else {
+    } else if (qtype === 'radio') {
         const option_div = cur_editor.closest('.option');
-        const option_ind = 1 * option_div.dataset.option_ind;
-        if(editor.dataset.field === 'option') {
+        const option_ind = Number(option_div.dataset.option_ind);
+        if (field === 'option') {
             cur_json.questions[ind].options[option_ind] = editor.value;
             cur_json.points[ind].options[option_ind][0] = editor.value;
-        } else if(editor.dataset.field === 'points') {
-            cur_json.points[ind].options[option_ind][1] = editor.value;
+        } else if (field === 'points') {
+            cur_json.points[ind].options[option_ind][1] = Number(editor.value);
+        }
+    } else if (qtype === 'number') {
+        if (field === 'answer') {
+            cur_json.questions[ind].answer = Number(editor.value);
+        } else if (field === 'points') {
+            cur_json.points[ind].answer = Number(editor.value);
         }
     }
+
     cur_editor = null;
-    // reload questions from cur_json
     gen_questions_div(questions_div, cur_json.questions, cur_json.points);
 }
+
 
 function on_edit_wording(e) {
     if(cur_editor) {
@@ -139,14 +143,21 @@ function on_edit_wording(e) {
         }
     }
 
-    const editable = e.target.parentNode.querySelector('.editable');
-    console.log(e.target, editable);
     const editor = e.target.parentNode.querySelector('.editor');
     const ebtn = e.target;
 
-    // make the question editable
-    editor.value = editable.innerText;
-    editable.classList.add('hidden');
+    const editableSpan = e.target.parentNode.querySelector('.editable');
+    const staticInput = e.target.parentNode.querySelector('input[type="number"]:not(.editor):disabled');
+
+    // Set editor value depending on what exists
+    if (editableSpan) {
+        editor.value = editableSpan.innerText;
+        editableSpan.classList.add('hidden');
+    } else if (staticInput) {
+        editor.value = staticInput.value;
+        staticInput.classList.add('hidden');
+    }
+
     editor.classList.remove('hidden');
     editor.select();
     ebtn.innerText = 'Done';
@@ -436,6 +447,57 @@ function on_change_qtype(e) {
 }
 
 
+//function to add eyword for text type question
+function on_add_keyword(e) {
+    const question_div = e.target.closest('.question');
+    const ind = 1 * question_div.dataset.question_ind;
+
+    // Collect existing keyword data before changing anything
+    const keyword_divs = question_div.querySelectorAll('.keyword');
+    const new_keywords = [];
+
+    keyword_divs.forEach(div => {
+        const word = div.querySelector('.keyword_input')?.value || "";
+        const point = div.querySelector('.points_input')?.value || "1";
+        new_keywords.push([word, point]);
+    });
+
+    // Add the new empty keyword
+    new_keywords.push(["", "1"]);
+
+    // Save updated keywords to model
+    cur_json.points[ind].keywords = new_keywords;
+
+    // Re-render
+    gen_questions_div(questions_div, cur_json.questions, cur_json.points);
+}
+
+//function to remove keyword for text type question
+function on_remove_keyword(e) {
+    const question_div = e.target.closest('.question');
+    const keyword_p = e.target.closest('.keyword');
+    const ind = 1 * question_div.dataset.question_ind;
+    const keyword_ind = 1 * keyword_p.dataset.keyword_ind;
+
+    // Collect all current keyword values
+    const keyword_divs = question_div.querySelectorAll('.keyword');
+    const new_keywords = [];
+
+    keyword_divs.forEach((div, i) => {
+        if (i === keyword_ind) return; // skip the one being removed
+        const word = div.querySelector('.keyword_input')?.value || "";
+        const point = div.querySelector('.points_input')?.value || "1";
+        new_keywords.push([word, point]);
+    });
+
+    cur_json.points[ind].keywords = new_keywords;
+
+    // Re-render
+    gen_questions_div(questions_div, cur_json.questions, cur_json.points);
+}
+
+
+
 function on_click(e) {
     switch(e.target.dataset.action) {
     case 'add_question': on_add_question(e); break;
@@ -451,6 +513,9 @@ function on_click(e) {
     case 'copy_credentials': on_copy_credentials(e); break;
     case 'schedule_exam': on_schedule_exam(e); break;
     case 'change_qtype': on_change_qtype(e); break;
+    case 'add_keyword': on_add_keyword(e); break;
+    case 'remove_keyword': on_remove_keyword(e); break;
+
     default: on_edit_done(); break;
     }
 }
