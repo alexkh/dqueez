@@ -416,18 +416,25 @@ async function on_schedule_exam(e) {
 }
 
 function on_change_qtype(e) {
-    const question_div = e.target.closest('.question');
-    const ind = 1 * question_div.dataset.question_ind; // index in qjson array
-    const qtype0 = question_div.dataset.qtype; // change from this qtype
-    const qtype1 = e.target.value; // change to this qtype
-    console.log(`changing qtype from _${qtype0}_ to _${qtype1}_`);
-    
-    // just update question type, your logic is fine
-    cur_json.questions[ind].qtype = qtype1;
+    // Ensure it only reacts to changes on <select class="qtype_sel">
+    if (!e.target.classList.contains('qtype_sel')) return;
 
-    // reload questions from cur_json
+    const question_div = e.target.closest('.question');
+    const ind = parseInt(question_div.dataset.question_ind);
+    const current_qtype = question_div.dataset.qtype;
+    const new_qtype = e.target.value;
+
+    if (current_qtype === new_qtype) return; // no change
+
+    console.log(`changing qtype from ${current_qtype} to ${new_qtype}`);
+
+    // Update question type in cur_json
+    cur_json.questions[ind].qtype = new_qtype;
+
+    // Re-render all questions to reflect the updated type
     gen_questions_div(questions_div, cur_json.questions, cur_json.points);
 }
+
 
 function on_click(e) {
     switch(e.target.dataset.action) {
@@ -443,7 +450,7 @@ function on_click(e) {
     case 'password_entered': on_password_entered(e); break;
     case 'copy_credentials': on_copy_credentials(e); break;
     case 'schedule_exam': on_schedule_exam(e); break;
-    // case 'change_qtype': on_change_qtype(e); break;
+    case 'change_qtype': on_change_qtype(e); break;
     default: on_edit_done(); break;
     }
 }
