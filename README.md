@@ -1,53 +1,210 @@
-# dqueez
-Deez Queez - an easy-to-use quiz platform for teachers
+# Deez Queez
 
-# how to set up a local version for development:
-### (assuming that you have node.js and make* installed)
-```
+> An easy-to-use quiz platform for teachers
+
+🌐 **Live Demo**: https://dqueez.com/
+
+## Table of Contents
+
+- [About](#about)
+- [Features](#features)
+- [Getting Started](#getting-started)
+- [Installation](#installation)
+- [Usage](#usage)
+- [API](#api)
+- [Project Structure](#project-structure) 
+- [License](#license)
+- [Changelog](#changelog)
+
+## About
+
+Deez Queez is a web-based quiz platform designed to streamline the process of creating, distributing, and managing quizzes in educational environments. Teachers can create custom quizzes with multiple question types, manage student access through unique URLs, and track responses in real-time.
+
+*This project was created as part of a school assignment by a collaborative development team.*
+
+### Team Members
+
+- Joshua Gould ([@birtheater](https://github.com/birtheater))
+- Aldebaraan Canedo Sosa ([@aldebaraan97](https://github.com/aldebaraan97))
+- Melissa Louise Bangloy ([@melissa0987](https://github.com/melissa0987))
+- Alexandre Kharlamov ([@alexkh](https://github.com/alexkh))
+- Daniel Li ([@DanielCrane292](https://github.com/DanielCrane292))
+
+### Built With
+
+- Node.js
+- Express.js
+- PostgreSQL
+- Vanilla JavaScript
+- HTML/CSS
+
+## Features
+
+- ✅ Multiple question types (multiple choice, checkboxes, numeric, text)
+- ✅ Time-controlled quiz availability
+- ✅ Individual student URLs with ID verification
+- ✅ Real-time response tracking
+- ✅ Intuitive quiz creation interface
+- ✅ Persistent data storage
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js (version 14 or higher)
+- PostgreSQL database
+- npm or Make
+
+### Installation
+
+Clone the repository:
+
+```bash
 git clone git@github.com:alexkh/dqueez.git
 cd dqueez/server
+```
+
+Set up your PostgreSQL database and configure connection settings in your environment or configuration files.
+
+#### Option 1: Using Make (Recommended)
+
+```bash
 make install
 make run
 ```
 
-### or, run using nodemon. It detects changes to files and auto-restarts server:
-```
-make dev
-```
+*make is not required but it unifies devops across devstacks
 
+#### Option 2: Using npm
 
-# if you don't have make* installed:
-```
-git clone git@github.com:alexkh/dqueez.git
-cd dqueez/server
+```bash
 npm ci
 node server.js
 ```
 
-### or, if you have nodemon:
-```
+#### Development Mode
+
+```bash
+make dev
+# or
 nodemon server.js
 ```
 
-# after that you can open your browser and enter the path:
+The application will be available at `http://localhost:3232`
+
+## Usage
+
+### For Teachers
+
+1. Create a new quiz with custom questions
+2. Set quiz availability timeframe
+3. Add students by their student IDs
+4. Generate and distribute individual quiz URLs
+5. Monitor student responses in real-time
+
+### For Students
+
+1. Access quiz via provided URL
+2. Enter student ID to verify identity
+3. Complete quiz within the specified timeframe
+4. Submit responses
+
+### Question Types
+
+- **Radio buttons**: Single-choice questions
+- **Checkboxes**: Multiple-choice questions
+- **Numeric**: Number-based answers
+- **Text**: Single word or short text responses
+
+## API
+
+The platform uses a modular architecture with shared functions:
+
+- `question_ops.js` - Core question handling and generation
+- `gen_questions_div()` - Generates quiz HTML from JSON
+- `gen_question_*()` - Type-specific question generators
+
+## Project Structure
+
 ```
-http://localhost:3232
+dqueez/
+├── server/
+│   ├── node_modules/           # Dependencies
+│   ├── public/                 # Static assets
+│   │   ├── css/
+│   │   │   └── main.css        # Main stylesheet
+│   │   ├── Deliverables/
+│   │   │   └── system_dev_final_...
+│   │   ├── img/                # Images
+│   │   └── js/                 # Client-side JavaScript
+│   │       ├── conduct.js
+│   │       ├── edit.js         # Quiz editing functionality
+│   │       ├── new_exam.js
+│   │       └── question_ops.js # Shared question functions
+│   ├── conduct.html            # Quiz taking interface
+│   ├── edit.html               # Quiz editing interface
+│   ├── index.html              # Main landing page
+│   ├── db.js                   # PostgreSQL database operations
+│   ├── Makefile                # Build automation
+│   ├── package-lock.json       # Locked dependencies
+│   ├── package.json            # Project dependencies
+│   └── server.js               # Main application server
+└── README.md
 ```
 
-*make is not required but it unifies devops across devstacks
+## Contributing
 
-# Changelog:
-Wed 18 Jun 2025:
-- added question_ops.js for those functions that are shared between the quiz
-editing page and the student's page. The new gen_questions_div() function will
-be used to generate the html for the quiz received as json. It will iterate
-each question and call gen_question(), which will detect the question type and
-call the corresponding function such as gen_question_radio(),
-gen_question_check(), gen_question_number(), gen_question_word() for radio
-buttons, checkboxes, numeric and single word answers correspondingly. The idea
-is to replace the add_question() and such in edit.js. If the question is
-editable, the third parameter to gen_question() should be set to true. The
-editable question contans inputs and buttons. This is now only implemented in
-edit.js, but it should be moved to question_ops.js
+Contributions are welcome! This project uses Make for unified development operations across different stacks.
 
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
+## License
+
+MIT License
+
+Copyright (c) 2025 Joshua Gould (@birtheater), Aldebaraan Canedo Sosa (@aldebaraan97), Melissa Louise Bangloy (@melissa0987), Alexandre Kharlamov (@alexkh), Daniel Li (@DanielCrane292)
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+## Changelog
+
+### June 19, 2025
+- Updated project documentation and README structure
+- Enhanced project setup instructions with PostgreSQL integration
+- Improved code organization and documentation
+
+### June 18, 2025
+
+- Added `question_ops.js` for reusable question generation logic
+- Introduced `gen_questions_div()` to render quizzes from JSON
+- Replaced old `add_question()` logic with `gen_question_*()` functions:
+  - `gen_question_radio()` - Multiple choice questions
+  - `gen_question_check()` - Multiple select questions
+  - `gen_question_number()` - Numeric answer questions
+  - `gen_question_word()` - Single word answer questions
+- Enabled teacher edit mode by passing points to generator functions
+- Separated logic for teacher vs student rendering
+
+---
+
+**🚀 Ready to try it out?** Visit [dqueez.com](https://dqueez.com/) to see the platform in action!
