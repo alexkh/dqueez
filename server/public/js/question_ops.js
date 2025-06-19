@@ -246,7 +246,6 @@ function gen_question_check(ind, question, points) {
     return div;
 }
 
-
 function gen_question_number(ind, question, points) {
     const qtype = 'number';
     const div = document.createElement('div');
@@ -302,8 +301,6 @@ function gen_question_number(ind, question, points) {
     return div;
 }
 
- 
-
 function gen_question_word(ind, question, points) {
     const qtype = 'word';
     const div = document.createElement('div');
@@ -311,52 +308,97 @@ function gen_question_word(ind, question, points) {
     div.dataset.qtype = qtype;
     div.dataset.question_ind = ind;
 
-    const keywords = points?.keywords || [];
+    if (points) { // Editable (teacher) version
+        // Ensure points structure exists
+        if (!points.keywords) {
+            points.keywords = [];
+        }
+        if (points.max_points === undefined) {
+            points.max_points = 1;
+        }
 
-    const keywordInputs = keywords.map((kw, i) => `
-        <p class="keyword" data-keyword_ind="${i}">
-            <input type="text" class="keyword_input" data-field="keyword" value="${kw[0]}" />
-            <label>Points:</label>
-            <input type="number" class="points_input" data-field="keyword_point" value="${kw[1]}" />
-            <button class="ebtn" data-action="remove_keyword">Remove</button>
-        </p>
-    `).join('');
-
-    const keywordSection = points ? `
-        <div class="keyword_section">
-            <label><strong>Important Keywords:</strong></label>
-            ${keywordInputs}
-            <button data-action="add_keyword">Add Keyword</button>
-        </div>
-        <br>
-        <span class="side_note">
-            <em>Note: Student answers will be initially auto-scored based on keywords, then manually reviewed.</em>
-        </span>
-    ` : '';
-
-    const html = `
-        <div class="image">
-            <img src="/img/placeholder.webp" />
-        </div>
-        <div class="text">
-            <h2>
-                <span class="qwording ${points ? 'editable' : ''}">${question.question}</span>
-                ${points ? `<input class="editor hidden" data-field="question" />` : ''}
-                ${points ? `
-                    <button class="ebtn" data-action="edit">Edit</button>
-                    <button data-action="remove_question">Remove Question</button>
-                ` : ''}
-            </h2>
-            ${points ? mk_qtype_selector(qtype) : ''}
-            ${points ? keywordSection : `
+        let html = `
+            <div class="image">
+                <img src="/img/placeholder.webp" />
+            </div>
+            <div class="text">
+              <h2>
+                <span class="qwording editable">${question.question}</span>
+                <input class="editor hidden" data-field="question" />
+                <button class="ebtn" data-action="edit">Edit</button>
+                <button data-action="remove_question">Remove Question</button>
+              </h2>
+              ${mk_qtype_selector(qtype)}
+              <div class="word-answer-settings">
                 <p class="option">
-                    <input type="text" class="student_answer" placeholder="Type your answer here..." />
+                  <span>
+                    <label>Sample Answer: </label>
+                    <textarea class="sample-answer editable" disabled>${question.sample_answer || ''}</textarea>
+                    <textarea class="editor hidden" data-field="sample_answer" ></textarea>
+                    <button class="ebtn" data-action="edit">Edit</button>
+                  </span>
                 </p>
-            `}
-        </div>
-    `;
+                <p class="option">
+                  <span>
+                    <label>Max Points: </label>
+                    <span class="points editable">${points.max_points}</span>
+                    <input type="number" data-field="max_points" class="editor hidden" min="0" step="0.5" />
+                    <button class="ebtn" data-action="edit">Edit</button>
+                  </span>
+                </p>
+                <div class="keywords-section">
+                  <h3>Auto-Scoring Keywords</h3>
+                  <p class="note">Students get points when their answer contains these keywords</p>
+        `;
 
-    div.innerHTML = html;
+        // Display existing keywords - Fixed to use correct variables and structure
+        for (let i = 0; i < points.keywords.length; i++) {
+            const keyword = points.keywords[i];
+            // Handle both array format [word, points] and object format {word, points}
+            const word = Array.isArray(keyword) ? keyword[0] : keyword.word;
+            const keywordPoints = Array.isArray(keyword) ? keyword[1] : keyword.points;
+            
+            html += `
+              <p class="keyword-item" data-keyword_ind="${i}">
+                <span>
+                  <label>Keyword: </label>
+                  <span class="keyword editable">${word}</span>
+                  <input class="editor hidden" data-field="keyword" />
+                  <button class="ebtn" data-action="edit">Edit</button>
+                </span>
+                <span class="side_note">
+                  Points: <span class="keyword-points editable">${keywordPoints}</span>
+                  <input type="number" data-field="keyword_points" class="editor hidden" min="0" step="0.5" />
+                  <button class="ebtn" data-action="edit">Edit</button>
+                  <button data-action="remove_keyword">Remove</button>
+                </span>
+              </p>
+            `;
+        }
+
+        html += `
+                  <button data-action="add_keyword">Add Keyword</button>
+                </div>
+              </div>
+            </div>
+        `;
+        div.innerHTML = html;
+    } else { // Student version
+        let html = `
+            <div class="image">
+                <img src="/img/placeholder.webp" />
+            </div>
+            <div class="text">
+              <h2><span class="qwording">${question.question}</span></h2>
+              <p class="option">
+                <label>Your Answer: </label>
+                <textarea name="word_answer_${ind}" placeholder="Type your answer here..." rows="4"></textarea>
+              </p>
+            </div>
+        `;
+        div.innerHTML = html;
+    }
+
     return div;
 }
 
@@ -394,30 +436,36 @@ function gather_answer_check(question_div) {
 }
 
 function gather_answer_number(question_div) {
-    console.log('gathering answer number');
     const result = {
         isset: false,
         val: null
     };
-    const input = question_div.querySelector('input[type="number"]');
+
+    const ind = question_div.dataset.question_ind;
+    const input = question_div.querySelector(`input[name="number_answer_${ind}"]`);
+
     if (input && input.value.trim() !== '') {
         result.isset = true;
         result.val = input.value.trim();
     }
+
     return result;
 }
-
 
 function gather_answer_word(question_div) {
-    console.log('gathering answer word');
     const result = {
         isset: false,
         val: null
     };
-    const input = question_div.querySelector('.student_answer');
+
+    const ind = question_div.dataset.question_ind;
+    const input = question_div.querySelector(`textarea[name="word_answer_${ind}"]`);
+
     if (input && input.value.trim() !== '') {
         result.isset = true;
         result.val = input.value.trim();
     }
+
     return result;
 }
+

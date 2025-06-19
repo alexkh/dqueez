@@ -94,12 +94,11 @@ function on_upload_quiz() {
 }
 
 
-
 function on_edit_done() {
     if (!cur_editor) return;
 
     const editable = cur_editor.parentNode.querySelector('.editable');
-    const editor = cur_editor.parentNode.querySelector('.editor');
+    const editor = cur_editor;
     const question_div = cur_editor.closest('.question');
     const ind = Number(question_div.dataset.question_ind);
     const qtype = question_div.dataset.qtype;
@@ -109,10 +108,13 @@ function on_edit_done() {
     if (field === 'question') {
         cur_json.questions[ind].question = editor.value;
 
-    } else  if (qtype === 'radio' || qtype === 'check') {
+    } else if (field === 'sample_answer') {
+        cur_json.questions[ind].sample_answer = editor.value;
+
+    } else if (qtype === 'radio' || qtype === 'check') {
         const option_div = cur_editor.closest('.option');
         const option_ind = Number(option_div.dataset.option_ind);
-        
+
         if (field === 'option') {
             cur_json.questions[ind].options[option_ind] = editor.value;
             cur_json.points[ind].options[option_ind][0] = editor.value;
@@ -126,35 +128,55 @@ function on_edit_done() {
         } else if (field === 'points') {
             cur_json.points[ind].answer = Number(editor.value);
         }
+
+    } else if (qtype === 'word') {
+        if (field === 'max_points') {
+            cur_json.points[ind].max_points = Number(editor.value);
+
+        } else if (field === 'keyword' || field === 'keyword_points') {
+            const keyword_div = cur_editor.closest('.keyword-item');
+            const keyword_ind = Number(keyword_div.dataset.keyword_ind);
+            const current_keyword = cur_json.points[ind].keywords[keyword_ind] || ["", "1"];
+
+            if (field === 'keyword') {
+                current_keyword[0] = editor.value;
+            } else {
+                current_keyword[1] = Number(editor.value);
+            }
+
+            cur_json.points[ind].keywords[keyword_ind] = current_keyword;
+        }
     }
 
     cur_editor = null;
     gen_questions_div(questions_div, cur_json.questions, cur_json.points);
 }
 
-
 function on_edit_wording(e) {
-    if(cur_editor) {
-        // we are in the editing mode right now.
-        // if same edit button pressed, we return. if different, however,
-        // we don't return, but rather start editing that other line
-        if(e.target.innerText === 'Done') {
+    if (cur_editor) {
+        // if same edit button pressed, finish editing
+        if (e.target.innerText === 'Done') {
             on_edit_done();
             return;
         } else {
-            on_edit_done();
+            on_edit_done(); // finish current edit before switching
         }
     }
 
     const editor = e.target.parentNode.querySelector('.editor');
     const ebtn = e.target;
 
+    
     const editableSpan = e.target.parentNode.querySelector('.editable');
     const staticInput = e.target.parentNode.querySelector('input[type="number"]:not(.editor):disabled');
 
-    // Set editor value depending on what exists
     if (editableSpan) {
-        editor.value = editableSpan.innerText;
+        // ✅ for spans or textarea (e.g. sample_answer)
+        if (editableSpan.tagName === 'TEXTAREA') {
+            editor.value = editableSpan.value || editableSpan.innerText;
+        } else {
+            editor.value = editableSpan.innerText;
+        }
         editableSpan.classList.add('hidden');
     } else if (staticInput) {
         editor.value = staticInput.value;
@@ -478,26 +500,28 @@ function on_add_keyword(e) {
 //function to remove keyword for text type question
 function on_remove_keyword(e) {
     const question_div = e.target.closest('.question');
-    const keyword_p = e.target.closest('.keyword');
-    const ind = 1 * question_div.dataset.question_ind;
-    const keyword_ind = 1 * keyword_p.dataset.keyword_ind;
+    const keyword_p = e.target.closest('.keyword-item');
+    const ind = Number(question_div.dataset.question_ind);
+    const keyword_ind = Number(keyword_p.dataset.keyword_ind);
 
-    // Collect all current keyword values
-    const keyword_divs = question_div.querySelectorAll('.keyword');
+    // Collect all current keyword values EXCEPT the one to remove
+    const keyword_divs = question_div.querySelectorAll('.keyword-item');
     const new_keywords = [];
 
     keyword_divs.forEach((div, i) => {
         if (i === keyword_ind) return; // skip the one being removed
-        const word = div.querySelector('.keyword_input')?.value || "";
-        const point = div.querySelector('.points_input')?.value || "1";
+        const word = div.querySelector('.keyword')?.innerText || "";
+        const point = div.querySelector('.keyword-points')?.innerText || "1";
         new_keywords.push([word, point]);
     });
 
+    // Save updated keywords
     cur_json.points[ind].keywords = new_keywords;
 
     // Re-render
     gen_questions_div(questions_div, cur_json.questions, cur_json.points);
 }
+
 
 
 
@@ -587,4 +611,3 @@ function showModal(message) {
         }
     };
 }
-

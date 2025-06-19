@@ -424,3 +424,34 @@ hr {
   font-size: 1rem;
 }
 
+/* Shared styles for both editor and sample-answer */
+
+.sample-answer, 
+.editor[data-field="sample_answer"]  {
+    width: 100%;
+    min-width: 300px;
+    max-width: 100%;
+    min-height: 100px;
+    padding: 0.6rem 0.8rem;
+    font: inherit;
+    box-sizing: border-box;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    line-height: 1.5;
+    resize: vertical;
+}
+
+/* Display (disabled) styling only for sample-answer span */
+.sample-answer {
+    background-color: #f8f8f8;
+    color: #333;
+    overflow: hidden; 
+    white-space: pre-wrap;  
+}
+
+/* Hide class still works for both */
+.editor.hidden,
+.sample-answer.hidden {
+    display: none;
+}
+
