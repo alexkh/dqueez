@@ -169,53 +169,66 @@ function gen_question_check(ind, question, points) {
     const div = document.createElement('div');
     div.classList.add('question');
     div.dataset.qtype = qtype;
-    div.dataset.question_ind = ind; // question index in the array from 0 to n
-    if(points) { // editable version
+    div.dataset.question_ind = ind;
+
+    if (points) { // Editable (teacher) version
+        // Ensure points.options exists and is initialized properly
+        if (!points.options || !Array.isArray(points.options)) {
+            points.options = question.options.map((opt, i) => [opt, i === 0 ? 1 : 0]);
+        }
+
         let html = `
             <div class="image">
                 <img src="/img/placeholder.webp" />
             </div>
             <div class="text">
-              <h2><span class="qwording editable">${question.question}</span>
+              <h2>
+                <span class="qwording editable">${question.question}</span>
                 <input class="editor hidden" data-field="question" />
-                <button class="ebtn"
-                    data-action="edit">Edit</button>
+                <button class="ebtn" data-action="edit">Edit</button>
                 <button data-action="remove_question">Remove Question</button>
               </h2>
-        ` + mk_qtype_selector(qtype);
-        for(let i = 0; i < question.options.length; ++i) {
+              ${mk_qtype_selector(qtype)}
+        `;
+
+        for (let i = 0; i < question.options.length; ++i) {
+            const optionText = question.options[i];
+            const optionPoints = points.options[i]?.[1] ?? (i === 0 ? 1 : 0);
+
+            // Ensure option points structure is valid
+            points.options[i] = [optionText, optionPoints];
+
             html += `
               <p class="option" data-option_ind="${i}">
                 <span>
-                  <input type="checkbox" name="radio_group_${ind}"
-                        value="${question.options[i]}" />
-                  <label class="answer editable">${question.options[i]}</label>
-                  <input class="editor hidden" data-field="option">
+                  <input type="checkbox" name="check_group_${ind}"
+                        value="${optionText}" />
+                  <label class="answer editable">${optionText}</label>
+                  <input class="editor hidden" data-field="option" />
                   <button class="ebtn" data-action="edit">Edit</button>
                 </span>
                 <span class="side_note">
-                  Points: <span class="points editable">${points.answer ?? 1}</span>
+                  Points: <span class="points editable">${optionPoints}</span>
                   <input type="number" data-field="points" class="editor hidden" />
                   <button class="ebtn" data-action="edit">Edit</button>
+                  <button data-action="remove_option">Remove</button>
                 </span>
               </p>
             `;
         }
-        html += `
-             <button data-action="add_option">Add an Answer Option</button>
-            </div>
-        `;
+
+        html += `<button data-action="add_option">Add an Answer Option</button></div>`;
         div.innerHTML = html;
-    } else { // student version
+    } else { // Student version
         let html = `
             <div class="image">
                 <img src="/img/placeholder.webp" />
             </div>
             <div class="text">
-              <h2><span class="qwording">${question.question}</span>
-              </h2>
+              <h2><span class="qwording">${question.question}</span></h2>
         `;
-        for(let i = 0; i < question.options.length; ++i) {
+
+        for (let i = 0; i < question.options.length; ++i) {
             html += `
               <p class="option">
                 <span>
@@ -225,13 +238,14 @@ function gen_question_check(ind, question, points) {
               </p>
             `;
         }
-        html += `
-            </div>
-        `;
+
+        html += `</div>`;
         div.innerHTML = html;
     }
+
     return div;
 }
+
 
 function gen_question_number(ind, question, points) {
     const qtype = 'number';

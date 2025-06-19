@@ -108,7 +108,7 @@ function on_edit_done() {
 
     if (field === 'question') {
         cur_json.questions[ind].question = editor.value;
-    } else if (qtype === 'radio') {
+    } else  if (qtype === 'radio' || qtype === 'check') {
         const option_div = cur_editor.closest('.option');
         const option_ind = Number(option_div.dataset.option_ind);
         if (field === 'option') {
