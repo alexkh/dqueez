@@ -42,8 +42,7 @@ Deez Queez is a web-based quiz platform designed to streamline the process of cr
 - ✅ Multiple question types (multiple choice, checkboxes, numeric, text)
 - ✅ Time-controlled quiz availability
 - ✅ Individual student URLs with ID verification
-- ✅ Real-time response tracking
-- ✅ Intuitive quiz creation interface
+- ✅ Real-time response tracking 
 - ✅ Persistent data storage
 
 ## Getting Started
@@ -65,12 +64,14 @@ cd dqueez/server
 
 Set up your PostgreSQL database and configure connection settings in your environment or configuration files.
 
-#### Option 1: Using Make (Recommended)
+#### Option 1: Using Make 
 
 ```bash
 make install
 make run
-make dev
+
+#for developement:
+    make dev 
 
 ```
 
@@ -81,11 +82,13 @@ make dev
 ```bash
 npm ci
 node server.js
-nodemon server.js
+
+#for developement:
+    nodemon server.js
 
 ```
  
-The application will be available at `http://localhost:3232`
+The application will be available at ```bash    http://localhost:3232      ```
 
 ## Usage
 
@@ -99,7 +102,7 @@ The application will be available at `http://localhost:3232`
 
 ### For Students
 
-1. Access quiz via provided URL
+1. Access quiz via provided URL by the teacher
 2. Enter student ID to verify identity
 3. Complete quiz within the specified timeframe
 4. Submit responses
