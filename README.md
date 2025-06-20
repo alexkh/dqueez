@@ -1,8 +1,8 @@
 # Deez Queez
-
+[![alt text](server/public/img/screenshot/image.png)](https://dqueez.com)
 > An easy-to-use quiz platform for teachers
 
-🌐 **Live Demo**: https://dqueez.com/
+🌐 **Live Demo**: [![logo](server/public/img/logo.png)](https://dqueez.com)
 
 ## Table of Contents
 
@@ -88,7 +88,7 @@ node server.js
 
 ```
  
-The application will be available at ```bash    http://localhost:3232      ```
+The application will be available at ```  http://localhost:3232      ```
 
 ## Usage
 
