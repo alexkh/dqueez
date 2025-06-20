@@ -1,7 +1,7 @@
 # Deez Queez
 > An easy-to-use quiz platform for teachers
 
-[![alt text](server/public/img/screenshot/image.png)]
+[![alt text](server/public/img/screenshot/banner.png)]
 
 
 🌐 **Live Demo**:  
