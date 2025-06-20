@@ -34,7 +34,7 @@ Deez Queez is a web-based quiz platform designed to streamline the process of cr
 - Node.js
 - Express.js
 - PostgreSQL
-- Vanilla JavaScript
+- JavaScript
 - HTML/CSS
 
 ## Features
@@ -70,6 +70,8 @@ Set up your PostgreSQL database and configure connection settings in your enviro
 ```bash
 make install
 make run
+make dev
+
 ```
 
 *make is not required but it unifies devops across devstacks
@@ -79,16 +81,10 @@ make run
 ```bash
 npm ci
 node server.js
-```
-
-#### Development Mode
-
-```bash
-make dev
-# or
 nodemon server.js
-```
 
+```
+ 
 The application will be available at `http://localhost:3232`
 
 ## Usage
@@ -148,7 +144,7 @@ dqueez/
 
 MIT License
 
-Copyright (c) 2025 Joshua Gould (@birtheater), Aldebaraan Canedo Sosa (@aldebaraan97), Melissa Louise Bangloy (@melissa0987), Alexandre Kharlamov (@alexkh), Daniel Li (@DanielCrane292)
+Copyright (c) 2025 Joshua Gould, Aldebaraan Canedo Sosa, Melissa Louise Bangloy, Alexandre Kharlamov, Daniel Li
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
