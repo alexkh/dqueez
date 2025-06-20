@@ -10,8 +10,7 @@
 - [Features](#features)
 - [Getting Started](#getting-started)
 - [Installation](#installation)
-- [Usage](#usage)
-- [API](#api)
+- [Usage](#usage) 
 - [Project Structure](#project-structure) 
 - [License](#license)
 - [Changelog](#changelog)
@@ -115,14 +114,7 @@ The application will be available at `http://localhost:3232`
 - **Checkboxes**: Multiple-choice questions
 - **Numeric**: Number-based answers
 - **Text**: Single word or short text responses
-
-## API
-
-The platform uses a modular architecture with shared functions:
-
-- `question_ops.js` - Core question handling and generation
-- `gen_questions_div()` - Generates quiz HTML from JSON
-- `gen_question_*()` - Type-specific question generators
+ 
 
 ## Project Structure
 
@@ -151,17 +143,7 @@ dqueez/
 │   └── server.js               # Main application server
 └── README.md
 ```
-
-## Contributing
-
-Contributions are welcome! This project uses Make for unified development operations across different stacks.
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
+ 
 ## License
 
 MIT License
