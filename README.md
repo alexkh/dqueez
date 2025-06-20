@@ -1,8 +1,14 @@
 # Deez Queez
-[![alt text](server/public/img/screenshot/image.png)](https://dqueez.com)
 > An easy-to-use quiz platform for teachers
 
-🌐 **Live Demo**: [![logo](server/public/img/logo.png)](https://dqueez.com)
+[![alt text](server/public/img/screenshot/image.png)](https://dqueez.com)
+
+
+🌐 **Live Demo**:  
+<a href="https://dqueez.com" target="_blank">
+  <img src="server/public/img/logo.png" alt="Dqueez Logo" width="120"/>
+</a>
+
 
 ## Table of Contents
 
