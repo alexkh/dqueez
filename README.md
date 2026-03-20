@@ -45,11 +45,11 @@ Deez Queez is a web-based quiz platform designed to streamline the process of cr
 
 ## Features
 
-- ✅ Multiple question types (multiple choice, checkboxes, numeric, text)
-- ✅ Time-controlled quiz availability
-- ✅ Individual student URLs with ID verification
-- ✅ Real-time response tracking 
-- ✅ Persistent data storage
+- Multiple question types (multiple choice, checkboxes, numeric, text)
+- Time-controlled quiz availability
+- Individual student URLs with ID verification
+- Real-time response tracking 
+- Persistent data storage
 
 ## Getting Started
 
@@ -194,4 +194,4 @@ SOFTWARE.
 
 ---
 
-**🚀 Ready to try it out?** Visit [https://dqueez.com](https://dqueez.com/) to see the platform in action!
+**Ready to try it out?** Visit [https://dqueez.com](https://dqueez.com/) to see the platform in action!
